@@ -1,5 +1,5 @@
 ﻿"""
-Cliente para dados UpToData (arquivos locais).
+UpToData client (local CSV files).
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from rf_lake.settings import UPTODATA_PASTA_INTEREST_RATE_BASE, UPTODATA_ARQUIVO
 
 logger = get_logger(__name__)
 
-# Constantes padrão (podem ser sobrescritas via settings)
+# Defaults (can be overridden via settings)
 PASTA_INTEREST_RATE_BASE = UPTODATA_PASTA_INTEREST_RATE_BASE or "x:\\Interest_Rate\\SettlementPrice"
 PASTA_CURRENCY_BASE = "X:\\Currency\\SettlementPrice"
 
@@ -27,50 +27,41 @@ ARQUIVO_CURRENCY_BASE = "Currency_SettlementPriceFile_Futures_"
 
 def definir_caminho_adj_bmf(pasta_base: str, arquivo_base: str, data_str: str) -> str | None:
     """
-    Busca o arquivo mais recente por data de modificação.
-    
+    Pick the newest file by modification time for a business date.
+
     Args:
-        pasta_base: Caminho base da pasta
-        arquivo_base: Prefixo base do arquivo
-        data_str: String no formato "AAAA-MM-DD" (ex: "2026-08-15")
-    
+        pasta_base: Base folder path
+        arquivo_base: Filename prefix
+        data_str: Date string "YYYY-MM-DD" (e.g. "2026-08-15")
+
     Returns:
-        Caminho completo do arquivo mais recente ou None se não encontrado
+        Full path to newest matching file, or None if not found
     """
     try:
-        # Converter string para datetime
-        data = datetime.strptime(data_str, "%Y-%m-%d")
-        
-        # Convertendo para string formatada
-        dia = f"{data.day:02}"
-        mes = f"{data.month:02}"
-        ano = str(data.year)
+        dt = datetime.strptime(data_str, "%Y-%m-%d")
 
-        # Pasta
+        dia = f"{dt.day:02}"
+        mes = f"{dt.month:02}"
+        ano = str(dt.year)
+
         pasta = pasta_base + f'\\{ano}{mes}{dia}\\'
-
-        # Prefixo fixo do arquivo
         prefixo = arquivo_base + f'{ano}{mes}{dia}_'
 
-        # Verifica se a pasta existe
         if not os.path.exists(pasta):
-            logger.warning(f"Pasta não encontrada: {pasta}")
+            logger.warning(f"Folder not found: {pasta}")
             return None
 
-        # Lista todos arquivos
         arquivos = os.listdir(pasta)
 
-        # Filtra os que começam com prefixo e terminam com .csv
         arquivos_filtrados = [
             f for f in arquivos
             if f.startswith(prefixo) and f.endswith(".csv")
         ]
 
         if not arquivos_filtrados:
-            logger.warning(f"Nenhum arquivo encontrado com prefixo {prefixo} na pasta {pasta}")
+            logger.warning(f"No files with prefix {prefixo} in {pasta}")
             return None
 
-        # Busca o arquivo mais recente por data de modificação
         arquivos_com_data = []
         for arq in arquivos_filtrados:
             caminho_completo = os.path.join(pasta, arq)
@@ -79,89 +70,83 @@ def definir_caminho_adj_bmf(pasta_base: str, arquivo_base: str, data_str: str) -
                 arquivos_com_data.append((mtime, arq, caminho_completo))
 
         if not arquivos_com_data:
-            logger.warning(f"Nenhum arquivo válido encontrado na pasta {pasta}")
+            logger.warning(f"No valid files in folder {pasta}")
             return None
 
-        # Pega o arquivo com maior data de modificação (mais recente)
         arquivo_mais_recente = max(arquivos_com_data, key=lambda x: x[0])
-        
-        logger.info(f"Encontrados {len(arquivos_filtrados)} arquivos com prefixo {prefixo}")
-        logger.info(f"Arquivo mais recente selecionado: {arquivo_mais_recente[1]}")
 
-        return arquivo_mais_recente[2]  # Retorna caminho completo
-    
+        logger.info(f"Found {len(arquivos_filtrados)} files with prefix {prefixo}")
+        logger.info(f"Using newest file: {arquivo_mais_recente[1]}")
+
+        return arquivo_mais_recente[2]
+
     except Exception as e:
-        logger.error(f"Erro inesperado ao definir caminho: {e}")
+        logger.error(f"Unexpected error resolving path: {e}")
         traceback.print_exc()
         return None
 
 
 def scrap_ajustes_bmf(data: str, pasta_base: str = PASTA_INTEREST_RATE_BASE, arquivo_base: str = ARQUIVO_INTEREST_RATE_BASE) -> pd.DataFrame:
     """
-    Busca dados de ajustes BMF para uma data específica.
-    
+    Load BMF adjustments for one date.
+
     Args:
-        data: String no formato "AAAA-MM-DD" (ex: "2026-08-15")
-        pasta_base: Caminho base da pasta (padrão: PASTA_INTEREST_RATE_BASE)
-        arquivo_base: Prefixo base do arquivo (padrão: ARQUIVO_INTEREST_RATE_BASE)
-    
+        data: "YYYY-MM-DD" (e.g. "2026-08-15")
+        pasta_base: Base folder (default: PASTA_INTEREST_RATE_BASE)
+        arquivo_base: File prefix (default: ARQUIVO_INTEREST_RATE_BASE)
+
     Returns:
-        pandas.DataFrame com os dados do arquivo
+        pandas.DataFrame from the CSV
     """
     caminho = definir_caminho_adj_bmf(pasta_base, arquivo_base, data)
-    
+
     if caminho is None:
         return pd.DataFrame()
-    
+
     return pd.read_csv(caminho, sep=";")
 
 
 def scrap_ajustes_bmf_for_dates(pasta_base: str, arquivo_base: str, lista_datas: list[str]) -> pd.DataFrame:
     """
-    Processa múltiplas datas e retorna um único DataFrame com todos os dados.
-    
+    Load multiple dates and concatenate into one DataFrame.
+
     Args:
-        pasta_base: Caminho base da pasta (ex: PASTA_INTEREST_RATE_BASE)
-        arquivo_base: Prefixo base do arquivo (ex: ARQUIVO_INTEREST_RATE_BASE)
-        lista_datas: Lista de strings no formato "AAAA-MM-DD" (ex: ["2026-08-15", "2026-08-16"])
-    
+        pasta_base: Base folder (e.g. PASTA_INTEREST_RATE_BASE)
+        arquivo_base: File prefix (e.g. ARQUIVO_INTEREST_RATE_BASE)
+        lista_datas: List of "YYYY-MM-DD" strings
+
     Returns:
-        DataFrame com todos os dados concatenados. DataFrame vazio se nenhum arquivo for encontrado.
+        Combined DataFrame, or empty if nothing found
     """
     dfs = []
-    
+
     for data_str in lista_datas:
         try:
-            logger.info(f"Processando data: {data_str}")
-            
-            # Busca o caminho do arquivo
+            logger.info(f"Processing date: {data_str}")
+
             caminho = definir_caminho_adj_bmf(pasta_base, arquivo_base, data_str)
-            
+
             if caminho is None:
-                logger.warning(f"Pulando data {data_str} - arquivo não encontrado")
+                logger.warning(f"Skipping {data_str} — file not found")
                 continue
-            
-            # Lê o CSV
+
             df_temp = pd.read_csv(caminho, sep=";")
-            
-            # Se não houver coluna RptDt (que será renomeada para data_referencia),
-            # adiciona data_referencia manualmente usando a data do arquivo
+
             if 'RptDt' not in df_temp.columns and 'data_referencia' not in df_temp.columns:
                 df_temp['data_referencia'] = data_str
-            
+
             dfs.append(df_temp)
-            logger.info(f"Data {data_str} processada com sucesso. {len(df_temp)} registros.")
-            
+            logger.info(f"Date {data_str} loaded OK. {len(df_temp)} rows.")
+
         except Exception as e:
-            logger.error(f"Erro ao processar data {data_str}: {e}")
+            logger.error(f"Error processing {data_str}: {e}")
             traceback.print_exc()
             continue
-    
-    # Concatena todos os DataFrames
+
     if dfs:
         df_final = pd.concat(dfs, ignore_index=True)
-        logger.info(f"Total de registros no DataFrame final: {len(df_final)}")
+        logger.info(f"Total rows in combined frame: {len(df_final)}")
         return df_final
     else:
-        logger.warning("Nenhum arquivo foi encontrado/processado. Retornando DataFrame vazio.")
+        logger.warning("No files processed. Returning empty DataFrame.")
         return pd.DataFrame()

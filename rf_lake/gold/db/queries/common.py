@@ -13,15 +13,15 @@ def apply_date_filters(
     end_date: Optional[str] = None,
 ) -> tuple[str, list]:
     """
-    Aplica filtros de data (ISO YYYY-MM-DD) a um SQL.
+    Apply date filters (ISO YYYY-MM-DD) to SQL.
 
-    Regras:
-    - se `ref_date` for fornecido, não pode haver `start_date`/`end_date`
-    - `start_date` e/ou `end_date` definem um intervalo inclusivo
-    - se nenhum for fornecido, não aplica filtro por data
+    Rules:
+    - if `ref_date` is set, `start_date`/`end_date` must not be set
+    - `start_date` and/or `end_date` define an inclusive range
+    - if none are set, no date filter is applied
     """
     if ref_date is not None and (start_date is not None or end_date is not None):
-        raise ValueError("Use apenas `ref_date` OU (`start_date`/`end_date`).")
+        raise ValueError("Use either `ref_date` OR (`start_date`/`end_date`).")
 
     if ref_date is not None:
         sql += f" AND {date_col} = ?"

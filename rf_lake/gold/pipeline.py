@@ -1,4 +1,4 @@
-"""Gold pipeline: silver → SQLite (somente datas faltantes)."""
+"""Gold pipeline: silver → SQLite (missing dates only)."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def run_gold(
     dates_to_load = missing_dates_gold(cfg, end_date)
 
     if cfg.date_mode == "missing_dates" and not dates_to_load:
-        logger.info("[%s] Gold skipped: nenhuma data faltante no SQLite", name)
+        logger.info("[%s] Gold skipped: no missing dates in SQLite", name)
         return GoldResult(
             name=name,
             status="skipped",
@@ -49,7 +49,7 @@ def run_gold(
         )
 
     if not silver_paths:
-        logger.warning("[%s] Gold skipped: sem parquet silver", name)
+        logger.warning("[%s] Gold skipped: no silver parquet", name)
         return GoldResult(
             name=name,
             status="skipped",
@@ -73,7 +73,7 @@ def run_gold(
 
         persisted = any_persisted and (total_rows > 0 or cfg.date_mode == "run_always")
         logger.info(
-            "[%s] Gold: %s datas a carregar, %s linhas, persisted=%s",
+            "[%s] Gold: %s dates to load, %s rows, persisted=%s",
             name,
             len(dates_to_load),
             total_rows,
@@ -112,7 +112,7 @@ def run_gold_phase(
                 name=task.name,
                 status="skipped",
                 dates_candidate=task.dates,
-                error=silver.error if silver else "silver ausente",
+                error=silver.error if silver else "silver missing",
             )
             continue
 
@@ -130,5 +130,5 @@ def run_gold_phase(
             config=task.config,
         )
 
-    logger.info("=== Gold phase concluída ===")
+    logger.info("=== Gold phase completed ===")
     return results

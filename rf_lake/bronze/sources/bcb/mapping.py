@@ -1,5 +1,5 @@
 """
-Mapeamento de dados da API BCB para formato canônico.
+Map raw BCB API data to the canonical schema.
 """
 
 from __future__ import annotations
@@ -9,17 +9,16 @@ import pandas as pd
 
 def map_negociacoes_to_canonical(df_raw: pd.DataFrame) -> pd.DataFrame:
     """
-    Mapeia DataFrame bruto do BCB para formato canônico.
-    
+    Map raw BCB trades DataFrame to canonical format.
+
     Args:
-        df_raw: DataFrame bruto do BCB
-        
+        df_raw: Raw BCB DataFrame
+
     Returns:
-        DataFrame no formato canônico
+        Canonical-format DataFrame
     """
     if df_raw is None or df_raw.empty:
         return pd.DataFrame()
-    
-    # Por enquanto retorna o DataFrame como está
-    # O mapeamento específico será feito nos pipelines ETL
+
+    # Pass-through for now; ETL pipelines may apply further mapping
     return df_raw.copy()

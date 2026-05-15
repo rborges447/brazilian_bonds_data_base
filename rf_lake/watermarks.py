@@ -1,4 +1,4 @@
-"""Watermarks por dataset: última data com artefato não vazio por camada."""
+"""Per-dataset watermarks: last business date with a non-empty artifact per layer."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def get_watermark(dataset: str, layer: Layer = "bronze") -> str | None:
 
 
 def set_watermark(dataset: str, layer: Layer, dates_present: list[str]) -> None:
-    """Atualiza watermark só com datas de negócio (ignora snapshot-only sem last_date)."""
+    """Update watermark using business dates only (ignores snapshot-only without last_date)."""
     if not dates_present:
         return
 
@@ -66,7 +66,7 @@ def set_watermark(dataset: str, layer: Layer, dates_present: list[str]) -> None:
 
 
 def get_all_watermarks() -> dict[str, dict[str, str | None]]:
-    """Retorna {dataset: {bronze: last_date, silver: last_date}}."""
+    """Return {dataset: {bronze: last_date, silver: last_date}}."""
     raw = _load_all()
     out: dict[str, dict[str, str | None]] = {}
     for dataset in DATASETS:
@@ -79,7 +79,7 @@ def get_all_watermarks() -> dict[str, dict[str, str | None]]:
 
 
 def rebuild_watermarks_from_disk() -> dict[str, dict[str, str | None]]:
-    """Reconstrói watermarks varrendo parquets existentes."""
+    """Rebuild watermarks by scanning existing Parquet files."""
     data: dict[str, Any] = {}
 
     for dataset in DATASETS:

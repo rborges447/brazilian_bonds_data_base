@@ -1,1 +1,1 @@
-"""Fonte de dados Tesouro Nacional."""
+"""National Treasury (Tesouro Nacional) data source."""

@@ -1,1 +1,1 @@
-"""Módulo de health checks do banco de dados."""
+"""Database health checks module."""

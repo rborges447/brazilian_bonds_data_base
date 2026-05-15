@@ -1,4 +1,4 @@
-"""Silver pipeline: bronze → transform → data/silver (somente datas faltantes)."""
+"""Silver pipeline: bronze → transform → data/silver (missing dates only)."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def run_silver(
     key = snapshot_key_dates(candidate_dates)
 
     if not bronze_path.is_file():
-        logger.warning("[%s] Silver skipped: bronze inexistente %s", name, bronze_path)
+        logger.warning("[%s] Silver skipped: bronze file missing %s", name, bronze_path)
         return SilverResult(
             name=name,
             status="skipped",
@@ -52,7 +52,7 @@ def run_silver(
     if not dates_to_run:
         silver_path = silver_parquet(name, key)
         logger.info(
-            "[%s] Silver skipped: %s candidatas, 0 faltantes",
+            "[%s] Silver skipped: %s candidate dates, 0 missing",
             name,
             len(dates_candidate),
         )
@@ -72,7 +72,7 @@ def run_silver(
             set_watermark(name, "silver", dates_processed)
 
         logger.info(
-            "[%s] Silver: %s candidatas, %s com dados, %s linhas → %s",
+            "[%s] Silver: %s candidates, %s with data, %s rows → %s",
             name,
             len(dates_candidate),
             len(dates_processed),
@@ -112,7 +112,7 @@ def run_silver_phase(
                 name=task.name,
                 status="skipped",
                 dates_candidate=task.dates,
-                error=bronze.error if bronze else "bronze ausente",
+                error=bronze.error if bronze else "bronze missing",
             )
             continue
 
@@ -133,5 +133,5 @@ def run_silver_phase(
         candidate = task.dates if bronze.status == "skipped" else (bronze.dates or task.dates)
         results[task.name] = run_silver(task.name, bronze_path, candidate)
 
-    logger.info("=== Silver phase concluída ===")
+    logger.info("=== Silver phase completed ===")
     return results

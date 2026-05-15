@@ -1,5 +1,5 @@
 """
-Validação de dados brutos da API BCB.
+Validate raw BCB API data.
 """
 
 from __future__ import annotations
@@ -9,17 +9,15 @@ import pandas as pd
 
 def validate_negociacoes(df: pd.DataFrame) -> bool:
     """
-    Valida se o DataFrame de negociações tem estrutura esperada.
-    
+    Check whether the trades DataFrame has the expected shape.
+
     Args:
-        df: DataFrame a validar
-        
+        df: DataFrame to validate
+
     Returns:
-        True se válido, False caso contrário
+        True if valid, False otherwise
     """
     if df is None or df.empty:
         return False
-    
-    # Validações básicas podem ser adicionadas aqui
-    
+
     return True

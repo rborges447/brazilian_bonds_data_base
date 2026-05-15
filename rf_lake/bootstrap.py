@@ -1,4 +1,4 @@
-"""Bootstrap: diretórios de dados + migrations SQLite."""
+"""Bootstrap: data directories + SQLite migrations."""
 
 from __future__ import annotations
 

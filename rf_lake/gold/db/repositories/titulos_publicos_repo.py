@@ -16,12 +16,12 @@ class TitulosPublicosRepo:
                       expressao=None, data_base=None, codigo_selic=None, codigo_isin=None,
                       status: str = "ATIVO") -> Tuple[str, str]:
         """
-        Insere o título público se não existir e, se já existir, preenche campos
-        faltantes (NULL) com os valores informados (sem sobrescrever valores existentes).
+        Insert the government bond if missing; if it exists, fill NULL fields
+        from the provided values (without overwriting non-null fields).
 
-        Motivação: muitos pipelines criam TITULOS_PUBLICOS apenas com a PK
-        (tipo_titulo, data_vencimento). Em execuções futuras, quando uma fonte trouxer
-        `expressao/codigo_selic/codigo_isin`, queremos completar o cadastro.
+        Rationale: many pipelines create TITULOS_PUBLICOS with only the PK
+        (tipo_titulo, data_vencimento). On later runs, when a source provides
+        `expressao/codigo_selic/codigo_isin`, we enrich the master record.
         """
         conn.execute(
             """

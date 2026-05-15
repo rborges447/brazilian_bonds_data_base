@@ -1,5 +1,5 @@
 """
-Queries de leitura para TITULOS_PUBLICOS.
+Read queries for TITULOS_PUBLICOS.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ def get_titulos_publicos(
     status: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Consulta títulos públicos (cadastro).
+    Query government bonds (reference / master data).
     """
     sql = """
         SELECT

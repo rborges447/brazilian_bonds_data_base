@@ -1,5 +1,5 @@
 """
-Validação de dados brutos da API Tesouro.
+Validate raw Tesouro API data.
 """
 
 from __future__ import annotations
@@ -9,15 +9,15 @@ import pandas as pd
 
 def validate_resultados(df: pd.DataFrame) -> bool:
     """
-    Valida se o DataFrame de resultados tem estrutura esperada.
-    
+    Check whether the auction results DataFrame has the expected shape.
+
     Args:
-        df: DataFrame a validar
-        
+        df: DataFrame to validate
+
     Returns:
-        True se válido, False caso contrário
+        True if valid, False otherwise
     """
     if df is None or df.empty:
         return False
-    
+
     return True

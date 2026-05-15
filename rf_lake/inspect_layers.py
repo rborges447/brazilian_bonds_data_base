@@ -1,5 +1,5 @@
 """
-Leitura e preview de dados por camada (Bronze / Silver / Gold) em um intervalo de datas.
+Read and preview data by layer (Bronze / Silver / Gold) over a date range.
 """
 
 from __future__ import annotations
@@ -33,12 +33,12 @@ from rf_lake.settings import BRONZE_ROOT, SILVER_ROOT
 
 
 def business_dates(start_date: str, end_date: str) -> list[str]:
-    """Dias úteis entre start e end (inclusive)."""
+    """Business days between start and end (inclusive)."""
     return list_dates(start_date, end_date=end_date, skip_weekends=True)
 
 
 def _artifact_paths_in_range(layer_root: Path, dataset: str, dates: list[str]) -> list[Path]:
-    """Parquets/json cujo segmento intersecta o conjunto de datas."""
+    """Parquet/JSON files whose segment intersects the date set."""
     if is_snapshot_dataset(dataset):
         dataset_dir = layer_root / dataset
         if not dataset_dir.is_dir():
@@ -101,7 +101,7 @@ def read_silver_range(dataset: str, start_date: str, end_date: str) -> pd.DataFr
 
 def read_gold_range(dataset: str, start_date: str, end_date: str) -> pd.DataFrame:
     if dataset not in DATASETS:
-        raise ValueError(f"Dataset desconhecido: {dataset}")
+        raise ValueError(f"Unknown dataset: {dataset}")
 
     conn = get_conn()
     try:
@@ -145,7 +145,7 @@ LAYER_READERS: dict[str, Callable[[str, str, str], pd.DataFrame]] = {
 def read_layer_range(layer: str, dataset: str, start_date: str, end_date: str) -> pd.DataFrame:
     reader = LAYER_READERS.get(layer)
     if reader is None:
-        raise ValueError(f"Camada desconhecida: {layer}")
+        raise ValueError(f"Unknown layer: {layer}")
     return reader(dataset, start_date, end_date)
 
 
@@ -166,10 +166,10 @@ def format_layer_report(
         "=" * 72,
         "",
         "--- head() ---",
-        df.head(head_rows).to_string() if not df.empty else "(vazio)",
+        df.head(head_rows).to_string() if not df.empty else "(empty)",
         "",
         "--- dtypes ---",
-        df.dtypes.to_string() if not df.empty else "(vazio)",
+        df.dtypes.to_string() if not df.empty else "(empty)",
         "",
     ]
     return "\n".join(lines)
@@ -180,7 +180,7 @@ def all_layers_summary(
     end_date: str,
     datasets: list[str] | None = None,
 ) -> pd.DataFrame:
-    """Tabela resumo (dataset, layer, rows, cols)."""
+    """Summary table (dataset, layer, rows, cols)."""
     names = datasets or list(DATASETS.keys())
     rows: list[dict] = []
     for dataset in names:

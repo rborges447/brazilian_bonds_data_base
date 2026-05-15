@@ -1,4 +1,4 @@
-"""Camada Bronze: extração e dados brutos."""
+"""Bronze layer: extraction and raw data."""
 
 from typing import TYPE_CHECKING
 

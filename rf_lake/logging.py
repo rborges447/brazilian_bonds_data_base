@@ -1,4 +1,4 @@
-"""Logging mínimo (espelho de rf_data.logging)."""
+"""Minimal logging (mirror of rf_data.logging)."""
 
 from __future__ import annotations
 

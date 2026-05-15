@@ -17,7 +17,7 @@ TITULOS_PUBLICOS_REQUIRED = [
     "data_vencimento",
 ]
 
-# Nota: a PK do schema é (tipo_titulo, data_vencimento)
+# Note: schema PK is (tipo_titulo, data_vencimento)
 
 # =========================
 # MERCADO_SECUNDARIO
@@ -112,7 +112,7 @@ AJUSTES_BMF_NUMERIC = [
 ]
 
 # =========================
-# RENAMES (API -> BANCO)
+# RENAMES (API -> database)
 # =========================
 
 MERCADO_SECUNDARIO_RENAME_MAP = {
@@ -206,10 +206,10 @@ PROJECOES_RENAME_MAP = {
 }
 
 # =========================
-# RENAMES (API -> BANCO) - Continuacao
+# RENAMES (API -> database) - continued
 # =========================
 
-# Leilões (Tesouro resultados)
+# Auctions (Tesouro results)
 LEILOES_RENAME_MAP = {
     "data_leilao": "data_referencia",
     "titulo": "tipo_titulo",

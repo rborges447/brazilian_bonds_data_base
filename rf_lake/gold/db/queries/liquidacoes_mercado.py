@@ -1,5 +1,5 @@
 ﻿"""
-Queries de leitura para LIQUIDACOES_MERCADO.
+Read queries for LIQUIDACOES_MERCADO.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ def get_liquidacoes_mercado(
     data_vencimento: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Consulta dados de liquidações de mercado, com join em `TITULOS_PUBLICOS`.
+    Query market settlement data with a join to `TITULOS_PUBLICOS`.
     """
     sql = """
         SELECT

@@ -1,1 +1,1 @@
-"""Fonte de dados ANBIMA."""
+"""ANBIMA data source."""

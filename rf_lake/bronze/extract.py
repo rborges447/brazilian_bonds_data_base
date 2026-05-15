@@ -1,5 +1,5 @@
 """
-Extração Bronze: apenas busca e gravação de brutos (Parquet/JSON).
+Bronze extraction: fetch and persist raw data only (Parquet/JSON).
 """
 
 from __future__ import annotations
@@ -30,8 +30,8 @@ def _write_bronze_series(
     df: pd.DataFrame | None,
 ) -> tuple[Path | None, int, list[str]]:
     """
-    Grava parquet só se houver linhas; segment_key = datas presentes no conteúdo.
-  """
+    Write Parquet only when there are rows; segment_key = dates present in the content.
+    """
     frame = df if df is not None else pd.DataFrame()
     if frame.empty:
         return None, 0, []
@@ -103,7 +103,7 @@ def extract_ipca_indice(dates: list[str]) -> tuple[Path | None, int, list[str]]:
 
 
 def extract_projecoes(dates: list[str], payloads: list[Any]) -> tuple[Path | None, int, list[str]]:
-    """Grava JSON com lista de respostas brutas (mesmo formato esperado por projecoes_to_df)."""
+    """Write JSON with a list of raw responses (same shape expected by projecoes_to_df)."""
     if not payloads:
         return None, 0, []
     path = bronze_json("projecoes", dates if dates else ["snapshot"])
@@ -139,5 +139,5 @@ EXTRACTORS = {
 def extract_dataset(name: str, dates: list[str]) -> tuple[Path | None, int, list[str]]:
     fn = EXTRACTORS.get(name)
     if fn is None:
-        raise ValueError(f"Dataset sem extrator direto: {name} (use fluxo projecoes no job)")
+        raise ValueError(f"Dataset has no direct extractor: {name} (use the projections flow in the job)")
     return fn(dates)

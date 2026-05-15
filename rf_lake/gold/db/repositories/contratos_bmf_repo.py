@@ -1,5 +1,5 @@
 """
-Repositório para operações na tabela CONTRATOS_BMF.
+Repository for CONTRATOS_BMF table operations.
 """
 from __future__ import annotations
 
@@ -9,20 +9,20 @@ from typing import Optional
 
 class ContratosBmfRepo:
     """
-    Repositório para operações CRUD na tabela CONTRATOS_BMF.
+    Repository for CRUD on CONTRATOS_BMF.
     """
     
     @staticmethod
     def exists(conn: sqlite3.Connection, ticker: str) -> bool:
         """
-        Verifica se um contrato com o ticker existe.
-        
+        Return whether a contract exists for the ticker.
+
         Args:
-            conn: Conexão com o banco
-            ticker: Ticker do contrato
-            
+            conn: Database connection
+            ticker: Contract ticker
+
         Returns:
-            True se existe, False caso contrário
+            True if it exists, False otherwise
         """
         row = conn.execute("""
             SELECT 1
@@ -36,22 +36,22 @@ class ContratosBmfRepo:
                       codigo_isin: Optional[str] = None,
                       data_vencimento: Optional[str] = None) -> str:
         """
-        Busca ou cria um contrato BMF. Retorna o ticker.
-        
+        Get or create a BMF contract. Returns the ticker.
+
         Args:
-            conn: Conexão com o banco
-            ticker: Ticker do contrato (PK)
-            codigo_isin: Código ISIN do contrato
-            data_vencimento: Data de vencimento no formato ISO (YYYY-MM-DD)
-            
+            conn: Database connection
+            ticker: Contract ticker (PK)
+            codigo_isin: Contract ISIN
+            data_vencimento: Maturity date in ISO (YYYY-MM-DD)
+
         Returns:
-            Ticker do contrato (sempre o mesmo que foi passado)
+            The ticker (same as input)
         """
-        # Verifica se já existe
+        # Check if it already exists
         if ContratosBmfRepo.exists(conn, ticker):
             return ticker
         
-        # Cria novo contrato
+        # Insert new contract
         conn.execute("""
             INSERT INTO CONTRATOS_BMF (
                 ticker, codigo_isin, data_vencimento

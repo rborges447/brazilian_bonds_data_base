@@ -1,5 +1,5 @@
 """
-Orquestrador: compõe Bronze → Silver → Gold por dataset.
+Orchestrator: runs Bronze → Silver → Gold per dataset.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from rf_lake.silver import run_silver
 
 
 def run_dataset(name: str, candidate_dates: list[str], end_date: str | None = None) -> dict:
-    """Executa as três camadas em sequência para um dataset."""
+    """Run all three layers in sequence for one dataset."""
     from datetime import date
 
     if end_date is None:
@@ -57,5 +57,5 @@ def run_dataset(name: str, candidate_dates: list[str], end_date: str | None = No
 
 
 def run_pipeline(name: str, dates: list[str]) -> dict:
-    """Alias de compatibilidade para backfill / run_one."""
+    """Compatibility alias for backfill / run_one."""
     return run_dataset(name, dates)

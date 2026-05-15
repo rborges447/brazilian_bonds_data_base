@@ -1,5 +1,5 @@
 """
-Silver: lê Bronze, valida e normaliza, grava Parquet canônico.
+Silver: reads Bronze, validates and normalizes, writes canonical Parquet.
 """
 
 from __future__ import annotations

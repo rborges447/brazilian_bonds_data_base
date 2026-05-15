@@ -1,14 +1,27 @@
 # Brazil Fixed Income Analytics
 
-Data lake e camada de leitura para analytics de renda fixa no Brasil (`rf_lake`): ingestão em camadas Bronze → Silver → Gold (SQLite), com fachada `Database` para consumo por API e notebooks.
+Brazilian fixed-income data lake (`rf_lake`) with layered ingestion (Bronze → Silver → Gold in SQLite) and a `Database` read facade for notebooks and a future HTTP API.
 
-## Requisitos
+## Requirements
 
 - Python 3.10+
-- Credenciais ANBIMA (para pipelines `mercado_secundario` e `projecoes`)
-- Opcional: acesso a arquivos UpToData (ajustes BMF) conforme paths no `.env`
+- [ANBIMA](https://www.anbima.com.br/) API credentials (required for `mercado_secundario` and `projecoes` pipelines)
+- Public sources: BCB, Tesouro Nacional, SIDRA/IBGE (no extra credentials in `.env.example`)
 
-## Setup rápido
+### UpToData (BMF adjustments) — optional, not in `.env.example`
+
+The `ajustes_bmf` pipeline reads settlement files from **[UpToData](https://www.uptodata.com.br/)**, a **paid B3 market data service**. It is not part of the public template because access is licensed per desk and paths are deployment-specific.
+
+If you have a subscription, add these variables to your **local** `.env` (never commit them):
+
+```bash
+UPTODATA_PASTA_INTEREST_RATE_BASE=/path/to/Interest_Rate/SettlementPrice
+UPTODATA_ARQUIVO_INTEREST_RATE_BASE=Interest_Rate_SettlementPriceFile_Futures_
+```
+
+Without UpToData, other datasets still run; only `ajustes_bmf` is affected.
+
+## Quick start
 
 ```bash
 python -m venv venv
@@ -18,43 +31,59 @@ venv\Scripts\activate
 # source venv/bin/activate
 
 pip install -e ".[dev]"
-copy .env.example .env   # Windows — preencha credenciais
+copy .env.example .env   # Windows — fill in credentials
 # cp .env.example .env   # Linux/macOS
 
 python run_lake.py migrate
 pytest tests/ -q
 ```
 
-## Variáveis de ambiente
+## Environment variables
 
-Copie [`.env.example`](.env.example) para `.env` e ajuste os valores.
+Copy [`.env.example`](.env.example) to `.env` and set values.
 
-| Variável | Descrição |
-|----------|-----------|
-| `DATA_START_DATE` | Data inicial padrão para backfill incremental |
-| `SQLITE_DB_PATH` | Caminho do SQLite Gold (ex.: `data/app.db`) |
-| `ANBIMA_CLIENT_ID` / `ANBIMA_CLIENT_SECRET` | OAuth ANBIMA |
-| `ANBIMA_TIMEOUT` / `ANBIMA_MAX_RETRIES` | HTTP ANBIMA |
-| `BCB_*` / `TESOURO_*` | Timeouts e retries BCB / Tesouro |
-| `UPTODATA_PASTA_*` / `UPTODATA_ARQUIVO_*` | Paths UpToData (ajustes BMF) |
-| `LOG_LEVEL` | Nível de log (`INFO`, `DEBUG`, …) |
+| Variable | Description |
+|----------|-------------|
+| `DATA_START_DATE` | Default start date for incremental backfill (`YYYY-MM-DD`) |
+| `SQLITE_DB_PATH` | Gold SQLite path (e.g. `data/app.db`) |
+| `ANBIMA_CLIENT_ID` / `ANBIMA_CLIENT_SECRET` | ANBIMA OAuth2 |
+| `ANBIMA_TIMEOUT` / `ANBIMA_MAX_RETRIES` | ANBIMA HTTP client |
+| `BCB_*` / `TESOURO_*` | Timeouts and retries for BCB and Tesouro APIs |
+| `LOG_LEVEL` | Log level (`INFO`, `DEBUG`, …) |
 
-**Nunca commite o arquivo `.env`** — ele contém segredos e está no `.gitignore`.
+**Never commit `.env`** — it holds secrets and is listed in `.gitignore`.
 
-## Arquitetura
+## Architecture
 
 ```
 rf_lake/
-  bronze/          # extração (APIs / arquivos → Parquet/JSON em data/raw)
-  silver/          # normalização
-  gold/            # persistência SQLite + queries SQL
+  bronze/          # extract (HTTP / files → Parquet/JSON under data/raw)
+  silver/          # normalize
+  gold/            # SQLite persistence + SQL queries
   jobs/            # daily, backfill, run_one
-  data_reader/     # fachada Database (produto / futura API HTTP)
-data/              # dados locais (ignorado pelo Git)
+  data_reader/     # Database facade (product / future HTTP API)
+data/              # local artifacts (gitignored)
 ```
 
-- **Pipeline interno:** jobs e módulos em `rf_lake` importam `gold.db.queries` e camadas Bronze/Silver/Gold diretamente.
-- **Consumo externo:** use `from rf_lake.data_reader import Database` (notebooks, futura API FastAPI).
+| Layer | Role |
+|-------|------|
+| **Bronze** | Raw pulls from ANBIMA, BCB, Tesouro, SIDRA; optional UpToData files for BMF |
+| **Silver** | Typed Parquet, rename maps aligned with Gold schema |
+| **Gold** | SQLite (`app.db`), versioned migrations, `get_*` queries |
+| **data_reader** | `Database` class — single entry for external consumers |
+
+- **Internal pipeline:** jobs and `rf_lake` modules import `gold.db.queries` and layer runners directly.
+- **External use:** `from rf_lake.data_reader import Database` (notebooks, future FastAPI).
+
+## Data sources (summary)
+
+| Dataset | Source | Auth in `.env.example` |
+|---------|--------|-------------------------|
+| `mercado_secundario`, `projecoes`, `leiloes`, `feriados` | ANBIMA API | Yes |
+| `liquidacoes_mercado` | BCB | Timeouts only |
+| `leiloes` (Tesouro) | Tesouro Nacional | Timeouts only |
+| `ipca_indice` | SIDRA (IBGE) | No |
+| `ajustes_bmf` | UpToData (B3, paid) | Local `.env` only |
 
 ## CLI
 
@@ -65,44 +94,39 @@ python run_lake.py backfill START_DATE END_DATE [PIPELINE]
 python run_lake.py one PIPELINE DATE
 ```
 
-Entry points instaláveis (após `pip install -e .`):
+After `pip install -e .`:
 
 - `rf-lake-migrate`
 - `rf-lake-daily`
 
-## Testes
+## Tests
 
 ```bash
 pytest tests/ -q
 ```
 
-Testes marcados com `integration` exigem `data/` populado localmente.
+Tests marked `integration` need a populated local `data/` directory.
 
-## Publicar no GitHub
+## Publishing to GitHub
 
-Repositório **público**: apenas código, `.env.example`, documentação e CI. Dados e segredos ficam fora do Git.
+Public repo: code, `.env.example`, docs, and CI only — no secrets or local databases.
 
-### Checklist antes do push
+### Pre-push checklist
 
-- [ ] `.env` não está no staging (`git status` não deve listá-lo)
-- [ ] `.env.example` usa placeholders (`your_client_id`), sem credenciais reais
-- [ ] Pastas `data/`, `venv/`, `*.db`, `.cursor/` ignoradas
-- [ ] Se `.env` já foi commitado por engano: `git rm --cached .env` e rotacione credenciais ANBIMA
+- [ ] `.env` is not staged (`git status` must not list it)
+- [ ] `.env.example` uses placeholders only (`your_client_id`)
+- [ ] `data/`, `venv/`, `*.db`, `.cursor/` are ignored
+- [ ] If `.env` was committed by mistake: `git rm --cached .env` and rotate ANBIMA credentials
 
-### Primeiro push
+### First push
 
 ```bash
-git init
-git add .
-git status   # revisar lista de arquivos
-git commit -m "Initial commit: rf_lake data platform and MIT license"
-git branch -M main
 git remote add origin https://github.com/<org>/<repo>.git
 git push -u origin main
 ```
 
-Crie o repositório no GitHub como **Public**, **sem** README inicial (este projeto já inclui um).
+Create the GitHub repository as **Public** without an initial README (this repo already includes one).
 
-## Licença
+## License
 
-MIT — ver [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).

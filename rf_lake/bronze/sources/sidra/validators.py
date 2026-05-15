@@ -1,5 +1,5 @@
 """
-Validações de dados do SIDRA (IPCA).
+SIDRA (IPCA) data validation.
 """
 
 from __future__ import annotations
@@ -11,12 +11,12 @@ import pandas as pd
 
 def validate_ipca_long(df: pd.DataFrame) -> bool:
     """
-    Valida o DataFrame long canônico do IPCA.
+    Validate the canonical long-format IPCA DataFrame.
 
-    Regras:
-    - Colunas obrigatórias presentes
-    - VAR_CODIGO em {"2266", "63"}
-    - DATA_CODIGO no formato YYYYMM
+    Rules:
+    - Required columns present
+    - VAR_CODIGO in {"2266", "63"}
+    - DATA_CODIGO in YYYYMM form
     """
     if df is None or df.empty:
         return False
@@ -34,11 +34,9 @@ def validate_ipca_long(df: pd.DataFrame) -> bool:
     if not codes.map(lambda s: bool(re.fullmatch(r"\d{6}", str(s)))).all():
         return False
 
-    # VALOR deve ser numérico (pode ter NaN, mas em geral não deveria)
+    # VALOR should be numeric (NaNs allowed; reject non-numeric dtypes)
     if "VALOR" in df.columns:
-        # `is_numeric_dtype` não garante ausência de NaN; aceitamos NaN mas rejeitamos tipos não numéricos
         if not pd.api.types.is_numeric_dtype(df["VALOR"]):
             return False
 
     return True
-

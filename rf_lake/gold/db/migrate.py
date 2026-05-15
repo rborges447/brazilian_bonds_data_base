@@ -31,7 +31,7 @@ def _applied(conn) -> set[str]:
 
 
 def _list_files(dirpath: Path) -> List[Migration]:
-    files = sorted(dirpath.glob("*.sql")) # ordena por nome (001..., 002...)
+    files = sorted(dirpath.glob("*.sql"))  # sort by filename (001..., 002...)
     out: List[Migration] = []
     for p in files:
         version = p.name.split("_", 1)[0]
@@ -41,7 +41,7 @@ def _list_files(dirpath: Path) -> List[Migration]:
 
 def apply_migrations(db_path=None, migrations_dir: Path = MIGRATIONS_DIR) -> None:
     if not migrations_dir.exists():
-        raise FileNotFoundError(f"Migrations dir não encontrada: {migrations_dir}")
+        raise FileNotFoundError(f"Migrations directory not found: {migrations_dir}")
 
     conn = get_conn(db_path)
     try:
@@ -54,7 +54,7 @@ def apply_migrations(db_path=None, migrations_dir: Path = MIGRATIONS_DIR) -> Non
 
             sql = m.path.read_text(encoding="utf-8")
             try:
-                # executescript já gerencia transações internamente
+                # executescript manages transactions internally
                 conn.executescript(sql)
 
                 conn.execute(

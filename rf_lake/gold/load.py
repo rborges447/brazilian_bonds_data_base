@@ -1,5 +1,5 @@
 """
-Gold: lê Silver (Parquet) e persiste no SQLite (mesmos repos do schema legado).
+Gold: reads Silver (Parquet) and persists to SQLite (same repos as the legacy schema).
 """
 
 from __future__ import annotations

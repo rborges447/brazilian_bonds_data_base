@@ -1,5 +1,5 @@
 ﻿"""
-Queries de leitura para LEILOES.
+Read queries for LEILOES.
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ def get_leiloes(
     numero_edital: Optional[int] = None,
 ) -> pd.DataFrame:
     """
-    Consulta dados de leilões (resultados + oferta) a partir da tabela LEILOES,
-    com join em TITULOS_PUBLICOS.
+    Query auction data (results + offering) from LEILOES,
+    with a join to TITULOS_PUBLICOS.
     """
     sql = """
         SELECT

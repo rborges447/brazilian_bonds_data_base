@@ -1,5 +1,5 @@
 ﻿"""
-Queries de leitura para MERCADO_SECUNDARIO.
+Read queries for MERCADO_SECUNDARIO.
 """
 
 from __future__ import annotations
@@ -22,9 +22,9 @@ def get_mercado_secundario(
     data_vencimento: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Consulta dados de mercado secundário.
+    Query secondary market data.
 
-    Retorna DataFrame com join em `TITULOS_PUBLICOS`.
+    Returns a DataFrame joined to `TITULOS_PUBLICOS`.
     """
     sql = """
         SELECT

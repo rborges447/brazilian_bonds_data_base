@@ -1,5 +1,5 @@
 """
-Validação de dados brutos do UpToData.
+Validate raw UpToData extracts.
 """
 
 from __future__ import annotations
@@ -9,17 +9,15 @@ import pandas as pd
 
 def validate_ajustes_bmf(df: pd.DataFrame) -> bool:
     """
-    Valida se o DataFrame de ajustes BMF tem estrutura esperada.
-    
+    Check whether the BMF adjustments DataFrame has the expected shape.
+
     Args:
-        df: DataFrame a validar
-        
+        df: DataFrame to validate
+
     Returns:
-        True se válido, False caso contrário
+        True if valid, False otherwise
     """
     if df is None or df.empty:
         return False
-    
-    # Validações básicas podem ser adicionadas aqui
-    
+
     return True

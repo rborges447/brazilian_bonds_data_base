@@ -9,33 +9,33 @@ from rf_lake.bronze.sources.uptodata.mapping import filtro_DI_DAP
 
 def normalize(df_raw: pd.DataFrame, dates: list[str] | None = None) -> pd.DataFrame:
     """
-    Normalização específica de AJUSTES_BMF (baseline do pipeline/notebook).
+    AJUSTES_BMF-specific normalization (pipeline/notebook baseline).
 
-    - Filtra para DI/DAP (quando `TckrSymb` existir)
-    - Remove colunas duplicadas
-    - Renomeia colunas via `AJUSTES_BMF_RENAME_MAP`
-    - Normaliza numéricos pt-BR (vírgula decimal)
-    - Normaliza datas para ISO
-    - (Opcional) filtra `data_referencia ∈ dates`
+    - Filter to DI/DAP when `TckrSymb` exists
+    - Remove duplicate columns
+    - Rename via `AJUSTES_BMF_RENAME_MAP`
+    - Normalize pt-BR numerics (comma decimal)
+    - Normalize dates to ISO
+    - (Optional) filter `data_referencia` to `dates`
     """
     df = df_raw.copy()
 
-    # Filtro DI/DAP (antes do rename: usa `TckrSymb`)
+    # DI/DAP filter (before rename: uses `TckrSymb`)
     if "TckrSymb" in df.columns:
         df = filtro_DI_DAP(df)
 
-    # Remover colunas duplicadas antes de renomear
+    # Remove duplicate columns before rename
     df = remove_duplicate_columns(df)
 
-    # Se já existe data_referencia e RptDt, remover RptDt antes do rename
+    # If both data_referencia and RptDt exist, drop RptDt before rename
     if "data_referencia" in df.columns and "RptDt" in df.columns:
         df = df.drop(columns=["RptDt"])
 
-    # Renomear colunas (somente as presentes)
+    # Rename columns (only those present)
     rename_map = {k: v for k, v in AJUSTES_BMF_RENAME_MAP.items() if k in df.columns}
     df = df.rename(columns=rename_map)
 
-    # Remover colunas duplicadas após renomear
+    # Remove duplicate columns after rename
     df = remove_duplicate_columns(df)
 
     df = normalize_numeric_columns(df, AJUSTES_BMF_NUMERIC, use_comma_decimal=True)

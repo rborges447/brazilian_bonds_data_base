@@ -1,5 +1,5 @@
 ﻿"""
-Queries de leitura para PROJECOES.
+Read queries for PROJECOES.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import sqlite3
 
 from rf_lake.gold.db.queries.common import apply_date_filters
 
-# Expressão SQL para ordenar ref_month (MM/YYYY) como ano*12+mês
+# SQL expression to sort ref_month (MM/YYYY) as year*12+month
 _REF_MONTH_ORDINAL = (
     "(CAST(SUBSTR(ref_month, 4) AS INTEGER) * 12 + CAST(SUBSTR(ref_month, 1, 2) AS INTEGER))"
 )
@@ -31,15 +31,15 @@ def get_projecoes(
     last: Optional[int] = None,
 ) -> pd.DataFrame:
     """
-    Consulta projeções (tabela PROJECOES).
+    Query projections (PROJECOES table).
 
-    Modos para ref_month (exclusivos; prioridade):
-    - last=N: últimos N meses de referência (ref_month).
-    - start_year/start_month/end_year/end_month: range de mês de referência (todos os quatro obrigatórios).
-    - ref_month (exato, string MM/YYYY): um mês específico.
-    - Sem filtro de período: todos os ref_month.
+    Modes for ref_month (exclusive; priority order):
+    - last=N: last N distinct ref_month values.
+    - start_year/start_month/end_year/end_month: ref_month range (all four required).
+    - ref_month (exact MM/YYYY string): a single month.
+    - No period filter: all ref_month values.
 
-    data_coleta em ISO YYYY-MM-DD. ref_month no formato MM/YYYY.
+    data_coleta in ISO YYYY-MM-DD. ref_month in MM/YYYY format.
     """
     params: list = []
     base_select = """

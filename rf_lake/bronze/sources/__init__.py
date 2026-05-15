@@ -1,29 +1,29 @@
 ﻿"""
-Módulo de fontes de dados externas: clientes HTTP para APIs externas.
+External data sources module: HTTP clients for external APIs.
 
-Este módulo contém clientes para buscar dados brutos de fontes externas:
-- ANBIMA (mercado secundário, projeções, leilões)
-- BCB (liquidações de mercado)
+This module contains clients to fetch raw data from external sources:
+- ANBIMA (secondary market, projections, auctions)
+- BCB (market settlements)
 - Tesouro Direto
-- UpToData (ajustes BMF)
+- UpToData (BMF adjustments)
 - Sidra/IBGE (IPCA)
 
-Responsabilidades:
-- Autenticação com APIs externas (quando necessário)
-- Fetch de dados brutos (HTTP requests)
-- Mapeamento básico de resposta API → DataFrame
-- Validação de dados brutos
+Responsibilities:
+- Authenticate with external APIs when required
+- Fetch raw data (HTTP requests)
+- Basic mapping from API response → DataFrame
+- Raw data validation
 
-Dependências permitidas:
-- settings (para credenciais, timeouts)
-- logging (para logs)
-- Bibliotecas padrão e terceiros (requests, pandas)
+Allowed dependencies:
+- settings (credentials, timeouts)
+- logging
+- Standard library and third-party libs (requests, pandas)
 
-Dependências proibidas:
-- db/ (não deve conhecer persistência)
-- etl/ (não deve conhecer pipelines)
-- jobs/ (não deve conhecer orquestração)
-- export/ (não deve conhecer exportação)
+Forbidden dependencies:
+- db/ (must not depend on persistence)
+- etl/ (must not depend on pipelines)
+- jobs/ (must not depend on orchestration)
+- export/ (must not depend on export)
 """
 
 from rf_lake.bronze.sources.anbima.client import AnbimaClient

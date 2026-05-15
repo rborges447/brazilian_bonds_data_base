@@ -1,30 +1,30 @@
 ﻿"""
-Módulo de banco de dados SQLite: persistência e leitura de dados.
+SQLite database module: persistence and reads.
 
-Este módulo contém toda a infraestrutura de banco de dados:
-- Conexões SQLite (WAL mode, foreign keys)
-- Sistema de migrações versionadas
-- Repositórios (CRUD por tabela)
-- Queries de leitura (get_*)
-- Schema e metadados
+This module contains all database infrastructure:
+- SQLite connections (WAL mode, foreign keys)
+- Versioned migration system
+- Repositories (CRUD per table)
+- Read queries (get_*)
+- Schema and metadata
 
-Responsabilidades:
-- Gerenciar conexões com SQLite
-- Executar migrações de schema
-- Fornecer interfaces para persistência (repositories) e leitura (queries)
-- Manter metadados de schema (colunas, tipos, rename maps)
+Responsibilities:
+- Manage SQLite connections
+- Run schema migrations
+- Provide persistence interfaces (repositories) and read interfaces (queries)
+- Maintain schema metadata (columns, types, rename maps)
 
-Dependências permitidas:
-- settings (para DB_PATH, MIGRATIONS_DIR)
-- logging (para logs)
-- Bibliotecas padrão e terceiros (sqlite3, pandas, pathlib)
+Allowed dependencies:
+- settings (for DB_PATH, MIGRATIONS_DIR)
+- logging (for logs)
+- Standard library and third-party libs (sqlite3, pandas, pathlib)
 
-Dependências proibidas:
-- sources/ (não deve conhecer fontes externas)
-- etl/ (não deve conhecer pipelines)
-- jobs/ (não deve conhecer orquestração)
-- export/ (não deve conhecer exportação)
-- data_reader/ (não deve conhecer leitor de dados de produto)
+Forbidden dependencies:
+- sources/ (must not depend on external sources)
+- etl/ (must not depend on pipelines)
+- jobs/ (must not depend on orchestration)
+- export/ (must not depend on export)
+- data_reader/ (must not depend on product data reader)
 """
 
 from rf_lake.gold.db import schema

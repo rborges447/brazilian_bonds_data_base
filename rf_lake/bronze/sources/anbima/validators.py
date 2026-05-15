@@ -1,5 +1,5 @@
 """
-Validação de dados brutos da API ANBIMA.
+Validate raw ANBIMA API data.
 """
 
 from __future__ import annotations
@@ -9,18 +9,17 @@ import pandas as pd
 
 def validate_mercado_secundario(df: pd.DataFrame) -> bool:
     """
-    Valida se o DataFrame de mercado secundário tem estrutura esperada.
-    
+    Check whether the secondary-market DataFrame has the expected shape.
+
     Args:
-        df: DataFrame a validar
-        
+        df: DataFrame to validate
+
     Returns:
-        True se válido, False caso contrário
+        True if valid, False otherwise
     """
     if df is None or df.empty:
         return False
-    
-    # Validações básicas podem ser adicionadas aqui
-    # Por exemplo: verificar se colunas esperadas existem
-    
+
+    # Basic checks can be added here (e.g. required columns)
+
     return True

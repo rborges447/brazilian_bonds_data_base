@@ -1,7 +1,7 @@
 """
-Funções de normalização comuns para ETL.
+Shared normalization helpers for ETL.
 
-Normalizações reutilizáveis aplicadas a múltiplos datasets.
+Reusable transforms applied across datasets.
 """
 
 from __future__ import annotations
@@ -12,22 +12,22 @@ import pandas as pd
 
 def normalize_numeric_columns(df: pd.DataFrame, columns: list[str], use_comma_decimal: bool = False) -> pd.DataFrame:
     """
-    Normaliza colunas numéricas, tratando formato brasileiro se necessário.
-    
+    Normalize numeric columns, optionally handling Brazilian formatting.
+
     Args:
-        df: DataFrame a normalizar
-        columns: Lista de nomes de colunas numéricas
-        use_comma_decimal: Se True, trata vírgula como separador decimal
-        
+        df: Input DataFrame
+        columns: Numeric column names
+        use_comma_decimal: If True, treat comma as decimal separator
+
     Returns:
-        DataFrame com colunas numéricas normalizadas
+        DataFrame with numeric columns coerced
     """
     df = df.copy()
     
     for col in columns:
         if col in df.columns:
             if use_comma_decimal:
-                # Converte para string, substitui vírgula por ponto, depois converte para numérico
+                # Stringify, replace comma with dot, then coerce numeric
                 df[col] = df[col].astype(str).str.replace(',', '.', regex=False)
             df[col] = pd.to_numeric(df[col], errors='coerce')
     
@@ -36,19 +36,19 @@ def normalize_numeric_columns(df: pd.DataFrame, columns: list[str], use_comma_de
 
 def normalize_date_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     """
-    Normaliza colunas de data para formato ISO (YYYY-MM-DD).
-    
-    Suporta múltiplos formatos de entrada:
-    - DD/MM/YYYY (formato brasileiro) - PRIORIDADE
-    - YYYY-MM-DD (formato ISO)
-    - MM/DD/YYYY (formato americano)
-    
+    Normalize date columns to ISO (YYYY-MM-DD).
+
+    Supported inputs:
+    - DD/MM/YYYY (Brazilian) — tried first
+    - YYYY-MM-DD (ISO)
+    - MM/DD/YYYY (US)
+
     Args:
-        df: DataFrame a normalizar
-        columns: Lista de nomes de colunas de data
-        
+        df: Input DataFrame
+        columns: Date column names
+
     Returns:
-        DataFrame com colunas de data normalizadas (None para valores inválidos)
+        DataFrame with dates as strings or None for invalid values
     """
     df = df.copy()
     
@@ -56,13 +56,13 @@ def normalize_date_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame
         if col not in df.columns:
             continue
         
-        # Função auxiliar para converter uma data
+        # Helper to convert one cell
         def convert_date(val):
-            # Tratar valores None/NaN
+            # Handle None/NaN
             if pd.isna(val):
                 return None
 
-            # Fast-path: já é um tipo de data/hora (evita warnings e parsing ambíguo)
+            # Fast-path: already a datetime-like type (avoids ambiguous parsing warnings)
             if isinstance(val, (datetime, date, pd.Timestamp)):
                 try:
                     dt = pd.Timestamp(val)
@@ -74,11 +74,11 @@ def normalize_date_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame
             
             val_str = str(val).strip()
             
-            # Tratar strings vazias ou inválidas
+            # Handle empty or invalid strings
             if not val_str or val_str.lower() in ('nan', 'nat', 'none', '', 'none'):
                 return None
 
-            # Fast-path: 'YYYY-MM-DD' (ou 'YYYY-MM-DD ...') -> pega só a parte da data
+            # Fast-path: 'YYYY-MM-DD' (or 'YYYY-MM-DD ...') — take date portion only
             if len(val_str) >= 10 and val_str[4] == "-" and val_str[7] == "-":
                 head = val_str[:10]
                 try:
@@ -87,11 +87,11 @@ def normalize_date_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame
                 except ValueError:
                     pass
             
-            # Tentar formatos em ordem de prioridade (DD/MM/YYYY primeiro)
+            # Try formats in priority order (DD/MM/YYYY first)
             formats = [
-                '%d/%m/%Y',      # DD/MM/YYYY (brasileiro) - PRIORIDADE
+                '%d/%m/%Y',      # DD/MM/YYYY (Brazilian) — priority
                 '%Y-%m-%d',      # YYYY-MM-DD (ISO)
-                '%m/%d/%Y',      # MM/DD/YYYY (americano)
+                '%m/%d/%Y',      # MM/DD/YYYY (US)
                 '%d-%m-%Y',      # DD-MM-YYYY
                 '%Y/%m/%d',      # YYYY/MM/DD
             ]
@@ -103,7 +103,7 @@ def normalize_date_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame
                 except ValueError:
                     continue
             
-            # Se nenhum formato funcionou, tentar pd.to_datetime com dayfirst=True (DD/MM/YYYY)
+            # Fallback: pandas with dayfirst=True (DD/MM/YYYY)
             try:
                 dt = pd.to_datetime(val_str, dayfirst=True, errors='coerce')
                 if pd.isna(dt):
@@ -112,10 +112,10 @@ def normalize_date_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame
             except Exception:
                 return None
         
-        # Aplicar conversão
+        # Apply conversion
         df[col] = df[col].apply(convert_date)
         
-        # Garantir que valores inválidos sejam None (não strings)
+        # Normalize invalid values to None (not string placeholders)
         df[col] = df[col].replace('None', None)
         df[col] = df[col].replace('nan', None)
         df[col] = df[col].replace('NaT', None)
@@ -126,12 +126,12 @@ def normalize_date_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame
 
 def remove_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Remove colunas duplicadas do DataFrame.
-    
+    Drop duplicate column names from the DataFrame.
+
     Args:
-        df: DataFrame a limpar
-        
+        df: DataFrame to clean
+
     Returns:
-        DataFrame sem colunas duplicadas
+        DataFrame without duplicate columns
     """
     return df.loc[:, ~df.columns.duplicated()]

@@ -1,4 +1,4 @@
-"""Testes de cobertura incremental por conteúdo e watermarks."""
+"""Incremental coverage tests (content-based and watermarks)."""
 
 from __future__ import annotations
 

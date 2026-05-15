@@ -1,4 +1,4 @@
-"""Resolução incremental de datas faltantes por camada (Bronze / Silver / Gold)."""
+"""Incremental resolution of missing dates per layer (Bronze / Silver / Gold)."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ SNAPSHOT_DATASETS = frozenset({"feriados", "ipca_indice", "projecoes"})
 
 
 def parse_segment_stem(stem: str) -> tuple[str, str] | None:
-    """Interpreta stem de arquivo: 2026-01-02__2026-01-10, snapshot__snapshot, all."""
+    """Parse file stem: 2026-01-02__2026-01-10, snapshot__snapshot, all."""
     if "__" not in stem:
         return None
     left, right = stem.split("__", 1)
@@ -62,8 +62,8 @@ def _dates_from_filename_stem(stem: str, *, skip_weekends: bool = True) -> set[s
 
 def _read_date_column_from_parquet(path: Path, candidates: list[str]) -> tuple[set[str], bool]:
     """
-    Retorna (datas presentes, coluna_encontrada).
-    Se a coluna existe mas o arquivo está vazio, coluna_encontrada=True e datas vazias.
+    Returns (present dates, column_found).
+    If the column exists but the file is empty, column_found=True and dates are empty.
     """
     try:
         import pyarrow.parquet as pq
@@ -95,8 +95,8 @@ def dates_present_in_dir(
     skip_weekends: bool = True,
 ) -> set[str]:
     """
-    Datas efetivamente presentes nos parquets (coluna de negócio).
-    Fallback: intervalo do nome do arquivo se nenhuma coluna for encontrada.
+    Dates actually present in Parquet files (business column).
+    Fallback: filename date range if no column can be found.
     """
     if not dataset_dir.is_dir() or not date_col_candidates:
         return set()
@@ -130,7 +130,7 @@ def dates_covered_in_dir(
     *,
     skip_weekends: bool = True,
 ) -> set[str]:
-    """Datas cobertas no diretório (por conteúdo quando possível)."""
+    """Dates covered in the directory (from content when possible)."""
     if date_col_candidates:
         return dates_present_in_dir(
             dataset_dir, date_col_candidates, skip_weekends=skip_weekends
@@ -146,7 +146,7 @@ def dates_covered_in_dir(
 
 
 def missing_dates_subset(candidate: list[str], covered: set[str]) -> list[str]:
-    """Preserva ordem; retorna só datas do candidato que não estão em covered."""
+    """Preserve order; return candidate dates not in covered."""
     if not candidate:
         return []
     return [d for d in candidate if d not in covered]
@@ -172,7 +172,7 @@ def bronze_artifact_path(dataset: str, dates: list[str]) -> Path:
 
 
 def missing_dates_bronze(dataset: str, candidate_dates: list[str]) -> list[str]:
-    """Datas a extrair no raw (delta)."""
+    """Dates to extract in raw (delta)."""
     if is_snapshot_dataset(dataset):
         key = snapshot_key_dates(candidate_dates)
         path = bronze_artifact_path(dataset, key)
@@ -190,7 +190,7 @@ def missing_dates_silver(
     candidate_dates: list[str],
     bronze_path: Path,
 ) -> list[str]:
-    """Datas a transformar no silver (delta ou bronze mais novo)."""
+    """Dates to transform in silver (delta or newer bronze)."""
     key = snapshot_key_dates(candidate_dates)
 
     if is_snapshot_dataset(dataset):
@@ -221,7 +221,7 @@ def missing_dates_silver(
 
 
 def missing_dates_gold(config: DatasetConfig, end_date: str) -> list[str]:
-    """Datas faltantes no SQLite (fonte de verdade de negócio)."""
+    """Missing dates in SQLite (business source of truth)."""
     if config.date_mode == "missing_dates":
         if not config.table or not config.date_col:
             return []
@@ -238,7 +238,7 @@ def missing_dates_gold(config: DatasetConfig, end_date: str) -> list[str]:
 
 
 def silver_paths_for_dataset(dataset: str, candidate_dates: list[str]) -> list[Path]:
-    """Lista parquets silver que contêm (no conteúdo) alguma data candidata."""
+    """List silver Parquet files whose content includes any candidate date."""
     dataset_dir = SILVER_ROOT / dataset
     if not dataset_dir.is_dir():
         return []

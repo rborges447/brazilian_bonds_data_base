@@ -1,4 +1,4 @@
-"""Backfill em intervalo: orquestra Bronze → Silver → Gold em três fases."""
+"""Backfill over a date range: orchestrates Bronze → Silver → Gold in three phases."""
 
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ def backfill(start_date: str, end_date: str, pipeline: str | None = None) -> dic
         dates = list_dates(start_date, end_date, skip_weekends=True)
         cfg = DATASETS.get(pipeline)
         if cfg is None:
-            raise ValueError(f"Pipeline desconhecido: {pipeline}")
+            raise ValueError(f"Unknown pipeline: {pipeline}")
         if cfg.date_mode == "run_always" and pipeline in ("feriados", "ipca_indice"):
             dates = []
         elif cfg.date_mode == "run_always" and pipeline == "projecoes":
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 3:
-        print("Uso: python -m rf_lake.jobs.backfill START_DATE END_DATE [PIPELINE]")
+        print("Usage: python -m rf_lake.jobs.backfill START_DATE END_DATE [PIPELINE]")
         sys.exit(1)
     start, end = sys.argv[1], sys.argv[2]
     pl = sys.argv[3] if len(sys.argv) > 3 else None

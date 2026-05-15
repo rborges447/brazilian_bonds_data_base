@@ -1,5 +1,5 @@
 """
-Job diário: orquestra Bronze → Silver → Gold em três fases.
+Daily job: orchestrates Bronze → Silver → Gold in three phases.
 """
 
 from __future__ import annotations
@@ -91,7 +91,7 @@ def run_daily(target_date: str | None = None) -> dict:
     if target_date is None:
         target_date = date.today().isoformat()
 
-    logger.info("Job diário rf_lake para %s", target_date)
+    logger.info("rf_lake daily job for %s", target_date)
     tasks = resolve_tasks(target_date)
 
     bronze = run_bronze_phase(tasks)
@@ -99,7 +99,7 @@ def run_daily(target_date: str | None = None) -> dict:
     gold = run_gold_phase(tasks, silver, target_date)
 
     results = _merge_phase_results(tasks, bronze, silver, gold)
-    logger.info("Job diário concluído.")
+    logger.info("Daily job completed.")
     return results
 
 

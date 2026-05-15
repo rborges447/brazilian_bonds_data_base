@@ -1,1 +1,1 @@
-"""Código comum para todas as fontes de dados."""
+"""Shared code for all data sources."""

@@ -1,4 +1,4 @@
-"""Executa um único dataset nas três camadas (debug)."""
+"""Run a single dataset through all three layers (debug)."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def run_one(pipeline: str, date: str) -> dict:
     bootstrap()
 
     if pipeline not in PIPELINE_NAMES:
-        raise ValueError(f"Pipeline desconhecido: {pipeline}. Opções: {list(PIPELINE_NAMES)}")
+        raise ValueError(f"Unknown pipeline: {pipeline}. Allowed: {list(PIPELINE_NAMES)}")
 
     cfg = get_dataset_config(pipeline)
     if pipeline == "feriados":
@@ -49,6 +49,6 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 3:
-        print("Uso: python -m rf_lake.jobs.run_one PIPELINE DATE")
+        print("Usage: python -m rf_lake.jobs.run_one PIPELINE DATE")
         sys.exit(1)
     print(run_one(sys.argv[1], sys.argv[2]))

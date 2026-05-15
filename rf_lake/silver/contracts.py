@@ -1,7 +1,7 @@
 """
-Contratos canônicos (schemas) para cada dataset/tabela.
+Canonical schemas per dataset/table.
 
-Define os formatos esperados de DataFrames após normalização.
+Defines expected DataFrame layouts after normalization.
 """
 
 from __future__ import annotations

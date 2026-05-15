@@ -1,5 +1,5 @@
 """
-Queries de leitura para CONTRATOS_BMF.
+Read queries for CONTRATOS_BMF.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ import pandas as pd
 
 def get_contratos_bmf(conn: sqlite3.Connection, *, ticker: Optional[str] = None) -> pd.DataFrame:
     """
-    Consulta contratos BMF (cadastro).
+    Query BMF contracts (reference / master data).
     """
     sql = """
         SELECT

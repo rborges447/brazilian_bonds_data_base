@@ -1,5 +1,5 @@
 ﻿"""
-Cliente para API ANBIMA.
+Client for the ANBIMA API.
 """
 
 from __future__ import annotations
@@ -22,8 +22,8 @@ class Token:
 
 
 class AnbimaAuth:
-    """Autenticação OAuth2 para API ANBIMA."""
-    
+    """OAuth2 authentication for the ANBIMA API."""
+
     TOKEN_URL = "https://api.anbima.com.br/oauth/access-token"
 
     def __init__(
@@ -38,7 +38,7 @@ class AnbimaAuth:
 
         if not self.client_id or not self.client_secret:
             raise RuntimeError(
-                "Credenciais ANBIMA ausentes. Defina ANBIMA_CLIENT_ID e ANBIMA_CLIENT_SECRET."
+                "ANBIMA credentials missing. Set ANBIMA_CLIENT_ID and ANBIMA_CLIENT_SECRET."
             )
 
         self._token: Optional[Token] = None
@@ -48,7 +48,7 @@ class AnbimaAuth:
         return "Basic " + base64.b64encode(raw).decode("utf-8")
 
     def get_access_token(self) -> str:
-        # reusa token se ainda válido
+        # Reuse token while still valid
         if self._token and time.time() < (self._token.expires_at - 30):
             return self._token.access_token
 
@@ -78,7 +78,7 @@ class AnbimaAuth:
         }
 
 
-# Endpoints da API ANBIMA
+# ANBIMA API endpoints
 MERCADO_SECUNDARIO_TPF = "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/mercado-secundario-TPF"
 VNA = "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/vna"
 PROJECOES = "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/projecoes"
@@ -87,7 +87,7 @@ PROJECOES = "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/p
 def _meses_anos_range(
     start_mes: int, start_ano: int, end_mes: int, end_ano: int
 ) -> List[tuple[int, int]]:
-    """Gera lista de (mes, ano) do início ao fim (inclusive), em ordem cronológica."""
+    """Build a chronological list of (month, year) from start through end (inclusive)."""
     out: List[tuple[int, int]] = []
     m, a = start_mes, start_ano
     while (a, m) <= (end_ano, end_mes):
@@ -100,8 +100,8 @@ def _meses_anos_range(
 
 
 class AnbimaClient:
-    """Cliente para buscar dados da API ANBIMA."""
-    
+    """HTTP client for ANBIMA market data."""
+
     def __init__(self, auth: Optional[AnbimaAuth] = None, timeout: int = ANBIMA_TIMEOUT, max_retries: int = ANBIMA_MAX_RETRIES):
         self.auth = auth or AnbimaAuth()
         self.timeout = timeout
@@ -109,8 +109,8 @@ class AnbimaClient:
 
     def fetch_by_date(self, url: str, date_iso: str) -> Optional[Any]:
         """
-        GET em um endpoint ANBIMA com params {'data': YYYY-MM-DD}
-        Retorna JSON ou None se 404.
+        GET an ANBIMA endpoint with {'data': YYYY-MM-DD}.
+        Returns JSON or None on 404.
         """
         params = {"data": date_iso}
 
@@ -137,8 +137,8 @@ class AnbimaClient:
 
     def fetch_by_mes_ano(self, url: str, mes: int | str, ano: int | str) -> Optional[Any]:
         """
-        GET em um endpoint ANBIMA com params {'mes': MM, 'ano': YYYY}.
-        Retorna JSON ou None se 404.
+        GET an ANBIMA endpoint with {'mes': MM, 'ano': YYYY}.
+        Returns JSON or None on 404.
         """
         mes_norm = f"{int(mes):02d}"
         ano_norm = f"{int(ano):04d}"
@@ -167,8 +167,8 @@ class AnbimaClient:
 
     def fetch_projecoes(self, mes: int | str, ano: int | str) -> Optional[Any]:
         """
-        Projeções IPCA/IGP-M para o mês/ano.
-        Campos conforme doc: indice, tipo_projecao, data_coleta, mes_referencia, variacao_projetada, data_validade.
+        IPCA/IGP-M projections for the given month/year.
+        Fields per API docs: indice, tipo_projecao, data_coleta, mes_referencia, variacao_projetada, data_validade.
         """
         return self.fetch_by_mes_ano(PROJECOES, mes, ano)
 
@@ -180,8 +180,8 @@ class AnbimaClient:
         end_ano: Optional[int] = None,
     ) -> List[Any]:
         """
-        Histórico de projeções de start_mes/start_ano até end_mes/end_ano (ou até hoje).
-        Útil para backfill ou análises.
+        Projection history from start_mes/start_ano through end_mes/end_ano (or through today).
+        Useful for backfills and analysis.
         """
         today = date.today()
         em = end_mes if end_mes is not None else today.month
@@ -196,7 +196,7 @@ class AnbimaClient:
 
     def fetch_for_dates(self, url: str, date_list: List[str]) -> List[Any]:
         """
-        Loop em várias datas; retorna lista de JSONs (ignorando None).
+        Fetch several dates; return list of JSON payloads (skipping None).
         """
         out: List[Any] = []
         for d in date_list:

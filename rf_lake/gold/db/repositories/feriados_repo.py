@@ -1,5 +1,5 @@
 """
-Repositório para tabela FERIADOS.
+Repository for FERIADOS table.
 """
 
 from __future__ import annotations
@@ -11,8 +11,8 @@ class FeriadosRepo:
     @staticmethod
     def replace_all(conn: sqlite3.Connection, datas: list[str]) -> None:
         """
-        Substitui todo o conteúdo da tabela FERIADOS pelas datas fornecidas.
-        Cada data deve ser string "YYYY-MM-DD".
+        Replace all rows in FERIADOS with the given dates.
+        Each date must be a "YYYY-MM-DD" string.
         """
         conn.execute("DELETE FROM FERIADOS")
         if datas:
@@ -23,6 +23,6 @@ class FeriadosRepo:
 
     @staticmethod
     def has_any(conn: sqlite3.Connection) -> bool:
-        """Retorna True se a tabela FERIADOS tiver ao menos um registro."""
+        """Return True if FERIADOS has at least one row."""
         row = conn.execute("SELECT 1 FROM FERIADOS LIMIT 1;").fetchone()
         return row is not None

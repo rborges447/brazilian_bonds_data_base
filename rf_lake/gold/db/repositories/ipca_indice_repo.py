@@ -36,13 +36,13 @@ class IpcaIndiceRepo:
         months: int,
     ) -> List[Tuple[str, Optional[float], Optional[float]]]:
         """
-        Retorna os últimos `months` registros de IPCA_INDICE.
+        Return the last `months` rows from IPCA_INDICE.
 
         Args:
-            months: quantidade de meses a retornar (deve ser >= 1)
+            months: number of months to return (must be >= 1)
 
         Returns:
-            Lista de tuplas (ref_month, ipca_index, ipca_mom) em ordem ascendente de ref_month.
+            List of tuples (ref_month, ipca_index, ipca_mom) sorted ascending by ref_month.
         """
         if months <= 0:
             return []

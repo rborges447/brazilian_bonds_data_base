@@ -1,1 +1,1 @@
-﻿"""Source de feriados nacionais (ANBIMA)."""
+﻿"""National holidays data source (ANBIMA)."""

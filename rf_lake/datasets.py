@@ -1,4 +1,4 @@
-"""Registro de datasets e resolução de tarefas para jobs."""
+"""Dataset registry and task resolution for jobs."""
 
 from __future__ import annotations
 
@@ -71,14 +71,14 @@ DATASETS: dict[str, DatasetConfig] = {
 def get_dataset_config(name: str) -> DatasetConfig:
     cfg = DATASETS.get(name)
     if cfg is None:
-        raise ValueError(f"Dataset desconhecido: {name}")
+        raise ValueError(f"Unknown dataset: {name}")
     return cfg
 
 
 def resolve_tasks(target_date: str | None = None) -> list[DatasetTask]:
     """
-    Monta tarefas com datas candidatas (Gold).
-    Cada fase Bronze/Silver/Gold aplica seu próprio filtro incremental.
+    Build tasks with candidate dates (Gold).
+    Each Bronze/Silver/Gold phase applies its own incremental filter.
     """
     if target_date is None:
         target_date = date.today().isoformat()

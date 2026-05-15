@@ -1,1 +1,1 @@
-"""Fonte de dados UpToData (arquivos locais)."""
+"""UpToData data source (local files)."""

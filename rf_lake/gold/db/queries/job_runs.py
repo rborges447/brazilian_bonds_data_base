@@ -1,5 +1,5 @@
 ﻿"""
-Queries de leitura para tabela `job_runs`.
+Read queries for table `job_runs`.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ def get_job_runs(
     status: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Consulta a tabela `job_runs`.
+    Query the `job_runs` table.
     """
     sql = """
         SELECT

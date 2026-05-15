@@ -8,12 +8,12 @@ from rf_lake.silver.normalize import normalize_date_columns, normalize_numeric_c
 
 def normalize(df_raw: pd.DataFrame, dates: list[str] | None = None) -> pd.DataFrame:
     """
-    Normalização específica de LEILOES (baseline do pipeline/notebook).
+    LEILOES-specific normalization (pipeline/notebook baseline).
 
-    - Renomeia colunas via `LEILOES_RENAME_MAP`
-    - Normaliza datas e garante ISO
-    - Se `dates` for fornecido, filtra `data_referencia ∈ dates` (porque o extract pode trazer o ano inteiro)
-    - Normaliza numéricos (inclui `oferta`)
+    - Rename columns via `LEILOES_RENAME_MAP`
+    - Normalize dates and enforce ISO
+    - If `dates` is set, filter `data_referencia` to those values (extract may return a full year)
+    - Normalize numerics (including `oferta`)
     """
     df = df_raw.copy()
 
@@ -21,7 +21,7 @@ def normalize(df_raw: pd.DataFrame, dates: list[str] | None = None) -> pd.DataFr
 
     df = normalize_date_columns(df, ["data_referencia", "data_vencimento"])
 
-    # Garantia: datas em ISO
+    # Enforce ISO date strings
     iso_re = r"^\d{4}-\d{2}-\d{2}$"
     if "data_referencia" in df.columns and "data_vencimento" in df.columns:
         mask_ref_iso = df["data_referencia"].notna() & df["data_referencia"].astype(str).str.match(iso_re)

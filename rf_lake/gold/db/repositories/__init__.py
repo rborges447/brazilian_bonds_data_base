@@ -1,4 +1,4 @@
-"""Repositórios para operações CRUD no banco de dados."""
+"""Repositories for CRUD operations on the database."""
 
 from rf_lake.gold.db.repositories.ajustes_bmf_repo import AjustesBmfRepo
 from rf_lake.gold.db.repositories.contratos_bmf_repo import ContratosBmfRepo

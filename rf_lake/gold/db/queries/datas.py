@@ -8,7 +8,7 @@ from rf_lake.gold.db.connection import get_conn
 
 def get_max_date(table: str, date_col: str) -> Optional[str]:
     """
-    Retorna MAX(date_col) da tabela no formato 'YYYY-MM-DD' (ou None se vazia).
+    Return MAX(date_col) from the table as 'YYYY-MM-DD' (or None if empty).
     """
     sql = f"SELECT MAX({date_col}) FROM {table};"
     conn = get_conn()
@@ -25,8 +25,8 @@ def list_dates(
     skip_weekends: bool = True,
     ) -> List[str]:
     """
-    Lista datas de start_date até end_date (inclusive).
-    end_date default: ontem.
+    List dates from start_date through end_date (inclusive).
+    end_date default: yesterday.
     """
     if end_date is None:
         end_date = (date.today() - timedelta(days=1)).isoformat()
@@ -54,9 +54,9 @@ def missing_dates_for_table(
     skip_weekends: bool = True,
     ) -> List[str]:
     """
-    Regra genérica:
-    - Se tabela tem datas: começa no dia seguinte ao MAX(date_col)
-    - Se não tem: começa em default_start
+    Generic rule:
+    - If the table has dates: start the day after MAX(date_col)
+    - Otherwise: start at default_start
     """
     max_dt = get_max_date(table, date_col)
     if max_dt:

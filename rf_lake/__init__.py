@@ -1,1 +1,1 @@
-"""rf_lake: ingestão em camadas Bronze → Silver → Gold (SQLite)."""
+"""rf_lake: layered ingestion Bronze → Silver → Gold (SQLite)."""

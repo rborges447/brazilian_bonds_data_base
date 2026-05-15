@@ -1,4 +1,4 @@
-"""Bronze pipeline: extração → data/raw (somente datas faltantes)."""
+"""Bronze pipeline: extraction → data/raw (missing dates only)."""
 
 from __future__ import annotations
 
@@ -68,7 +68,7 @@ def _projecoes_payloads() -> tuple[list[Any], list[str]]:
     if backfill:
         start_m, start_y = _mes_ano_n_meses_atras(current_m, current_y, BACKFILL_MONTHS - 1)
         logger.info(
-            "Projeções bronze: backfill %s meses (%s/%s .. %s/%s).",
+            "Projections bronze: backfill %s months (%s/%s .. %s/%s).",
             BACKFILL_MONTHS,
             start_m,
             start_y,
@@ -119,7 +119,7 @@ def run_bronze(name: str, candidate_dates: list[str]) -> BronzeResult:
     if not dates_to_run:
         path = bronze_artifact_path(name, key)
         logger.info(
-            "[%s] Bronze skipped: %s candidatas, 0 faltantes (raw já cobre)",
+            "[%s] Bronze skipped: %s candidate dates, 0 missing (raw already covers)",
             name,
             len(dates_candidate),
         )
@@ -139,14 +139,14 @@ def run_bronze(name: str, candidate_dates: list[str]) -> BronzeResult:
         else:
             fn = _EXTRACTORS.get(name)
             if fn is None:
-                raise ValueError(f"Dataset sem extrator bronze: {name}")
+                raise ValueError(f"Dataset has no bronze extractor: {name}")
             path, raw_rows, dates_processed = fn(dates_to_run)
 
         if raw_rows > 0 and dates_processed:
             set_watermark(name, "bronze", dates_processed)
 
         logger.info(
-            "[%s] Bronze: %s candidatas, %s com dados, %s linhas → %s",
+            "[%s] Bronze: %s candidates, %s with data, %s rows → %s",
             name,
             len(dates_candidate),
             len(dates_processed),
@@ -177,5 +177,5 @@ def run_bronze_phase(tasks: list[DatasetTask]) -> dict[str, BronzeResult]:
     results: dict[str, BronzeResult] = {}
     for task in tasks:
         results[task.name] = run_bronze(task.name, task.dates)
-    logger.info("=== Bronze phase concluída ===")
+    logger.info("=== Bronze phase completed ===")
     return results

@@ -1,4 +1,4 @@
-"""Configuração central do rf_lake (Bronze / Silver / Gold)."""
+"""Central configuration for rf_lake (Bronze / Silver / Gold)."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ def _validate_iso_date(value: str, name: str) -> str:
     try:
         date.fromisoformat(value)
     except ValueError as exc:
-        raise ValueError(f"{name} inválida (esperado YYYY-MM-DD): {value!r}") from exc
+        raise ValueError(f"{name} is invalid (expected YYYY-MM-DD): {value!r}") from exc
     return value
 
 
@@ -59,6 +59,6 @@ META_DIR = DATA_ROOT / "meta"
 
 
 def ensure_data_layout() -> None:
-    """Cria diretórios de dados (raw, silver, meta, pasta do SQLite)."""
+    """Create data directories (raw, silver, meta, SQLite parent folder)."""
     for path in (DATA_ROOT, BRONZE_ROOT, SILVER_ROOT, META_DIR, DB_PATH.parent):
         path.mkdir(parents=True, exist_ok=True)

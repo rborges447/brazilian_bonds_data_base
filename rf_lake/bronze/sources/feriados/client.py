@@ -1,5 +1,5 @@
 """
-Cliente para feriados nacionais (fonte ANBIMA – XLS público).
+Client for national holidays (ANBIMA public XLS).
 """
 
 from __future__ import annotations
@@ -15,11 +15,11 @@ FERIADOS_XLS_URL = "https://www.anbima.com.br/feriados/arqs/feriados_nacionais.x
 
 def fetch_feriados() -> List[str]:
     """
-    Baixa o arquivo XLS de feriados nacionais da ANBIMA e retorna
-    as datas em formato ISO "YYYY-MM-DD".
+    Download ANBIMA national-holiday XLS and return
+    dates as ISO strings "YYYY-MM-DD".
 
     Returns:
-        Lista de strings no formato "YYYY-MM-DD".
+        List of "YYYY-MM-DD" strings.
     """
     resp = requests.get(FERIADOS_XLS_URL, timeout=30)
     resp.raise_for_status()

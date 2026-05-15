@@ -1,5 +1,5 @@
 """
-Repositório para operações na tabela AJUSTES_BMF.
+Repository for AJUSTES_BMF table operations.
 """
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import sqlite3
 
 class AjustesBmfRepo:
     """
-    Repositório para operações CRUD na tabela AJUSTES_BMF.
+    Repository for CRUD on AJUSTES_BMF.
     """
     
     @staticmethod
@@ -18,14 +18,14 @@ class AjustesBmfRepo:
                taxa_ajuste: float | None = None,
                quantidade_ajuste: float | None = None) -> None:
         """
-        Insere ou atualiza um registro de ajuste BMF.
-        
+        Insert or update a BMF adjustment row.
+
         Args:
-            conn: Conexão com o banco
-            ticker: Ticker do contrato (FK para CONTRATOS_BMF)
-            data_referencia: Data de referência no formato ISO (YYYY-MM-DD)
-            taxa_ajuste: Taxa de ajuste
-            quantidade_ajuste: Quantidade de ajuste
+            conn: Database connection
+            ticker: Contract ticker (FK to CONTRATOS_BMF)
+            data_referencia: Reference date in ISO (YYYY-MM-DD)
+            taxa_ajuste: Adjustment rate
+            quantidade_ajuste: Adjustment quantity
         """
         conn.execute("""
             INSERT INTO AJUSTES_BMF (

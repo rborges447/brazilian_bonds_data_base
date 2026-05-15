@@ -8,12 +8,12 @@ from rf_lake.silver.normalize import normalize_date_columns, normalize_numeric_c
 
 def normalize(df_raw: pd.DataFrame, dates: list[str] | None = None) -> pd.DataFrame:
     """
-    Normalização específica de LIQUIDACOES_MERCADO (baseline do pipeline).
+    LIQUIDACOES_MERCADO-specific normalization (pipeline baseline).
 
-    - Renomeia colunas via `LIQUIDACOES_MERCADO_RENAME_MAP`
-    - Normaliza numéricos pt-BR (vírgula decimal)
-    - Normaliza datas para ISO
-    - (Opcional) filtra `data_referencia ∈ dates` (guard rail para DATA MOV)
+    - Rename columns via `LIQUIDACOES_MERCADO_RENAME_MAP`
+    - Normalize pt-BR numerics (comma decimal)
+    - Normalize dates to ISO
+    - (Optional) filter `data_referencia` to `dates` (guard rail for DATA MOV)
     """
     df = df_raw.copy()
 

@@ -1,4 +1,4 @@
-"""Queries de produto para consultas ao banco de dados."""
+"""Product read queries against the database."""
 
 from rf_lake.gold.db.queries.ajustes_bmf import get_ajustes_bmf
 from rf_lake.gold.db.queries.common import apply_date_filters

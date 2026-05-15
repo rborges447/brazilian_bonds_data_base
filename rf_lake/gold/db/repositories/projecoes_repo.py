@@ -1,5 +1,5 @@
 """
-Repositório para tabela PROJECOES.
+Repository for PROJECOES table.
 """
 
 from __future__ import annotations
@@ -36,6 +36,6 @@ class ProjecoesRepo:
 
     @staticmethod
     def has_any(conn: sqlite3.Connection) -> bool:
-        """Retorna True se a tabela PROJECOES tiver ao menos um registro."""
+        """Return True if PROJECOES has at least one row."""
         row = conn.execute("SELECT 1 FROM PROJECOES LIMIT 1;").fetchone()
         return row is not None

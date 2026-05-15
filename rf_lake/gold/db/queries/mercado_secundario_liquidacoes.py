@@ -1,6 +1,6 @@
 ﻿"""
-Query combinada: MERCADO_SECUNDARIO + LIQUIDACOES_MERCADO (LEFT JOIN) com TITULOS_PUBLICOS.
-Retorna taxa_anbima e qtd_titulos (e demais colunas) no mesmo DataFrame.
+Combined query: MERCADO_SECUNDARIO + LIQUIDACOES_MERCADO (LEFT JOIN) with TITULOS_PUBLICOS.
+Returns taxa_anbima and qtd_titulos (and other columns) in one DataFrame.
 """
 
 from __future__ import annotations
@@ -23,12 +23,12 @@ def get_mercado_secundario_com_liquidacoes(
     data_vencimento: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Consulta mercado secundário e liquidações no mesmo DataFrame.
+    Query secondary market and settlements in one DataFrame.
 
-    MERCADO_SECUNDARIO (base) LEFT JOIN LIQUIDACOES_MERCADO em
-    (tipo_titulo, data_vencimento, data_referencia), com TITULOS_PUBLICOS.
-    Colunas de liquidação (qtd_operacoes, qtd_titulos, pu_medio) são NULL
-    quando não houver liquidação no mesmo dia.
+    MERCADO_SECUNDARIO (base) LEFT JOIN LIQUIDACOES_MERCADO on
+    (tipo_titulo, data_vencimento, data_referencia), with TITULOS_PUBLICOS.
+    Settlement columns (qtd_operacoes, qtd_titulos, pu_medio) are NULL
+    when there is no settlement on the same day.
     """
     sql = """
         SELECT

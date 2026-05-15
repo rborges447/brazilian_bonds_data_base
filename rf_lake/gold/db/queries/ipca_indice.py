@@ -1,5 +1,5 @@
 ﻿"""
-Queries de leitura para IPCA_INDICE.
+Read queries for IPCA_INDICE.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from rf_lake.gold.db.queries.common import apply_date_filters
 
 
 def _first_day_iso(year: int, month: int) -> str:
-    """Retorna o primeiro dia do mês em ISO YYYY-MM-DD (ex.: 2025-06-01)."""
+    """Return the first day of the month as ISO YYYY-MM-DD (e.g. 2025-06-01)."""
     return f"{year:04d}-{month:02d}-01"
 
 
@@ -30,15 +30,15 @@ def get_ipca_indice(
     last: Optional[int] = None,
 ) -> pd.DataFrame:
     """
-    Consulta IPCA mensal (tabela IPCA_INDICE).
+    Query monthly IPCA (IPCA_INDICE table).
 
-    Modos (exclusivos; prioridade na ordem abaixo):
-    - last=N: últimos N meses de referência.
-    - start_year/start_month_num/end_year/end_month_num: range por ano e mês (todos os quatro obrigatórios para range).
-    - ref_month ou start_month/end_month (ISO YYYY-MM-DD): comportamento legado.
-    - Sem filtro: retorna tudo.
+    Modes (exclusive; priority order):
+    - last=N: last N reference months.
+    - start_year/start_month_num/end_year/end_month_num: year/month range (all four required for range).
+    - ref_month or start_month/end_month (ISO YYYY-MM-DD): legacy behavior.
+    - No filter: return all rows.
 
-    ref_month, start_month, end_month são strings ISO YYYY-MM-DD (sempre dia 01).
+    ref_month, start_month, end_month are ISO YYYY-MM-DD strings (always day 01).
     """
     params: list = []
 
@@ -90,7 +90,7 @@ def get_ipca_indice(
 
 def get_ipca_indice_last_months(conn: sqlite3.Connection, *, months: int) -> pd.DataFrame:
     """
-    Retorna os últimos `months` registros (ordenados do mais antigo -> mais recente).
+    Return the last `months` rows (oldest → newest).
     """
     if months <= 0:
         return pd.DataFrame(columns=["ref_month", "ipca_index", "ipca_mom"])

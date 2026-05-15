@@ -8,12 +8,12 @@ from rf_lake.silver.normalize import normalize_date_columns, normalize_numeric_c
 
 def normalize(df_raw: pd.DataFrame, dates: list[str] | None = None) -> pd.DataFrame:
     """
-    Normalização específica de MERCADO_SECUNDARIO (baseline do pipeline).
+    MERCADO_SECUNDARIO-specific normalization (pipeline baseline).
 
-    - Renomeia colunas via `MERCADO_SECUNDARIO_RENAME_MAP`
-    - Normaliza numéricos
-    - Normaliza datas para ISO
-    - (Opcional) filtra por `dates` em `data_referencia`
+    - Rename columns via `MERCADO_SECUNDARIO_RENAME_MAP`
+    - Normalize numerics
+    - Normalize dates to ISO
+    - (Optional) filter `data_referencia` to `dates`
     """
     df = df_raw.copy()
 

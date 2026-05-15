@@ -1,2 +1,2 @@
-"""Fonte de dados SIDRA (IBGE)."""
+"""SIDRA (IBGE) data source."""
 

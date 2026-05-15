@@ -1,4 +1,4 @@
-"""Fixtures para testes de inspeção do data lake."""
+"""Fixtures for data lake inspection tests."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from rf_lake.settings import DATA_START_DATE
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
-        "integration: testes que leem data/raw, data/silver e data/app.db",
+        "integration: tests that read data/raw, data/silver and data/app.db",
     )
 
 

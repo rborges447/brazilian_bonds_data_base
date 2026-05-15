@@ -1,5 +1,5 @@
 ﻿"""
-Queries de leitura para AJUSTES_BMF.
+Read queries for AJUSTES_BMF.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ def get_ajustes_bmf(
     ticker: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Consulta dados de ajustes BMF, com left join em `CONTRATOS_BMF` para trazer cadastro.
+    Query BMF adjustment rows with a left join to `CONTRATOS_BMF` for reference data.
     """
     sql = """
         SELECT

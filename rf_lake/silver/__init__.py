@@ -1,4 +1,4 @@
-"""Camada Silver."""
+"""Silver layer."""
 
 from typing import TYPE_CHECKING
 

@@ -1,7 +1,7 @@
 """
-Leitor de dados do data platform.
+Data platform reader.
 
-Fachada principal para consumidores externos (calculadora, analytics, Dash/API).
+Main facade for external consumers (calculator, analytics, Dash/API).
 """
 
 from __future__ import annotations
@@ -37,30 +37,29 @@ from rf_lake.settings import DB_PATH
 
 class Database:
     """
-    Interface pública para operações no banco de dados SQLite.
-    
-    Esta classe centraliza todas as operações de banco de dados e deve ser
-    usada por outros módulos para acessar o banco de dados.
-    
-    Thread-safe: Cada operação cria sua própria conexão.
+    Public interface for SQLite database operations.
+
+    Centralizes database access for other modules.
+
+    Thread-safe: each operation opens its own connection.
     """
     
     def __init__(self, db_path: Optional[str] = None):
         """
-        Inicializa a instância do Database.
-        
+        Initialize Database.
+
         Args:
-            db_path: Caminho opcional para o arquivo do banco de dados.
-                     Se não fornecido, usa o caminho padrão configurado.
+            db_path: Optional path to the database file.
+                     If omitted, uses the configured default path.
         """
         self._db_path = db_path or DB_PATH
     
     @contextmanager
     def _get_connection(self):
         """
-        Context manager para obter uma conexão com o banco.
-        
-        Garante que a conexão seja fechada automaticamente após o uso.
+        Context manager yielding a database connection.
+
+        Ensures the connection is closed after use.
         """
         conn = get_conn(self._db_path)
         try:
@@ -69,7 +68,7 @@ class Database:
             conn.close()
     
     # ============================================================================
-    # CONSULTAS (API PÚBLICA)
+    # READ QUERIES (PUBLIC API)
     # ============================================================================
 
     @staticmethod
@@ -83,12 +82,12 @@ class Database:
         end_date: Optional[str] = None,
     ) -> tuple[str, list]:
         """
-        Aplica filtros de data (ISO YYYY-MM-DD) a um SQL.
+        Apply date filters (ISO YYYY-MM-DD) to SQL.
 
-        Regras:
-        - se `ref_date` for fornecido, não pode haver `start_date`/`end_date`
-        - `start_date` e/ou `end_date` definem um intervalo inclusivo
-        - se nenhum for fornecido, não aplica filtro por data
+        Rules:
+        - if `ref_date` is set, `start_date`/`end_date` must not be used
+        - `start_date` and/or `end_date` define an inclusive range
+        - if none are set, no date filter is applied
         """
         return _apply_date_filters(
             sql,
@@ -108,17 +107,17 @@ class Database:
         data_vencimento: Optional[str] = None,
     ) -> pd.DataFrame:
         """
-        Consulta dados de mercado secundário.
-        
+        Query secondary market data.
+
         Args:
-            ref_date: Data de referência exata no formato 'YYYY-MM-DD'
-            start_date: Data inicial (inclusive) no formato 'YYYY-MM-DD'
-            end_date: Data final (inclusive) no formato 'YYYY-MM-DD'
-            tipo_titulo: Filtro opcional por tipo de título
-            data_vencimento: Filtro opcional por vencimento do título (YYYY-MM-DD)
-            
+            ref_date: Exact reference date 'YYYY-MM-DD'
+            start_date: Start date (inclusive) 'YYYY-MM-DD'
+            end_date: End date (inclusive) 'YYYY-MM-DD'
+            tipo_titulo: Optional filter by bond type
+            data_vencimento: Optional filter by maturity (YYYY-MM-DD)
+
         Returns:
-            DataFrame com dados de mercado secundário
+            DataFrame of secondary market rows
         """
         with self._get_connection() as conn:
             return _q_get_mercado_secundario(
@@ -139,17 +138,17 @@ class Database:
         data_vencimento: Optional[str] = None,
     ) -> pd.DataFrame:
         """
-        Consulta dados de liquidações de mercado.
-        
+        Query market settlement data.
+
         Args:
-            ref_date: Data de referência exata no formato 'YYYY-MM-DD'
-            start_date: Data inicial (inclusive) no formato 'YYYY-MM-DD'
-            end_date: Data final (inclusive) no formato 'YYYY-MM-DD'
-            tipo_titulo: Filtro opcional por tipo de título
-            data_vencimento: Filtro opcional por vencimento do título (YYYY-MM-DD)
-            
+            ref_date: Exact reference date 'YYYY-MM-DD'
+            start_date: Start date (inclusive) 'YYYY-MM-DD'
+            end_date: End date (inclusive) 'YYYY-MM-DD'
+            tipo_titulo: Optional filter by bond type
+            data_vencimento: Optional filter by maturity (YYYY-MM-DD)
+
         Returns:
-            DataFrame com dados de liquidações de mercado
+            DataFrame of settlement rows
         """
         with self._get_connection() as conn:
             return _q_get_liquidacoes_mercado(
@@ -170,7 +169,7 @@ class Database:
         data_vencimento: Optional[str] = None,
     ) -> pd.DataFrame:
         """
-        Consulta mercado secundário e liquidações no mesmo DataFrame (taxa_anbima e qtd_titulos).
+        Query secondary market and settlements in one DataFrame (taxa_anbima and qtd_titulos).
         """
         with self._get_connection() as conn:
             return _q_get_mercado_secundario_com_liquidacoes(
@@ -190,16 +189,16 @@ class Database:
         ticker: Optional[str] = None,
     ) -> pd.DataFrame:
         """
-        Consulta dados de ajustes BMF.
-        
+        Query BMF adjustment rows.
+
         Args:
-            ref_date: Data de referência exata no formato 'YYYY-MM-DD'
-            start_date: Data inicial (inclusive) no formato 'YYYY-MM-DD'
-            end_date: Data final (inclusive) no formato 'YYYY-MM-DD'
-            ticker: Filtro opcional por ticker
-            
+            ref_date: Exact reference date 'YYYY-MM-DD'
+            start_date: Start date (inclusive) 'YYYY-MM-DD'
+            end_date: End date (inclusive) 'YYYY-MM-DD'
+            ticker: Optional ticker filter
+
         Returns:
-            DataFrame com dados de ajustes BMF
+            DataFrame of BMF adjustment rows
         """
         with self._get_connection() as conn:
             return _q_get_ajustes_bmf(
@@ -217,10 +216,10 @@ class Database:
         status: Optional[str] = None,
     ) -> pd.DataFrame:
         """
-        Consulta títulos públicos (cadastro).
-        
+        Query government bonds (master/reference data).
+
         Returns:
-            DataFrame com todos os títulos públicos
+            DataFrame of all matching bonds
         """
         with self._get_connection() as conn:
             return _q_get_titulos_publicos(
@@ -232,13 +231,13 @@ class Database:
 
     def list_ativos(self) -> pd.DataFrame:
         """
-        Alias para `get_titulos_publicos()` (compatibilidade).
+        Alias for `get_titulos_publicos()` (backward compatibility).
         """
         return self.get_titulos_publicos()
 
     def get_contratos_bmf(self, ticker: Optional[str] = None) -> pd.DataFrame:
         """
-        Consulta contratos BMF (cadastro).
+        Query BMF contracts (master/reference data).
         """
         with self._get_connection() as conn:
             return _q_get_contratos_bmf(conn, ticker=ticker)
@@ -253,18 +252,18 @@ class Database:
         numero_edital: Optional[int] = None,
     ) -> pd.DataFrame:
         """
-        Consulta dados de leilões (resultados + oferta) a partir da tabela LEILOES.
-        
+        Query auction data (results + offering) from LEILOES.
+
         Args:
-            data_referencia: Data exata no formato 'YYYY-MM-DD'
-            start_date: Data inicial (inclusive) no formato 'YYYY-MM-DD'
-            end_date: Data final (inclusive) no formato 'YYYY-MM-DD'
-            tipo_titulo: Filtro opcional por tipo do título
-            data_vencimento: Filtro opcional por vencimento do título
-            numero_edital: Filtro opcional por número do edital
-            
+            data_referencia: Exact date 'YYYY-MM-DD'
+            start_date: Start date (inclusive) 'YYYY-MM-DD'
+            end_date: End date (inclusive) 'YYYY-MM-DD'
+            tipo_titulo: Optional filter by bond type
+            data_vencimento: Optional filter by maturity
+            numero_edital: Optional filter by notice number
+
         Returns:
-            DataFrame com dados de leilões
+            DataFrame of auction rows
         """
         with self._get_connection() as conn:
             return _q_get_leiloes(
@@ -289,11 +288,11 @@ class Database:
         last: Optional[int] = None,
     ) -> pd.DataFrame:
         """
-        Consulta IPCA mensal (tabela IPCA_INDICE).
+        Query monthly IPCA (IPCA_INDICE table).
 
-        Modos: last=N (últimos N meses); start_year/start_month_num/end_year/end_month_num (range);
-        ref_month ou start_month/end_month em ISO (legado); ou sem filtro (tudo).
-        Datas em ISO YYYY-MM-DD, sempre dia 01.
+        Modes: last=N (last N months); start_year/start_month_num/end_year/end_month_num (range);
+        ref_month or start_month/end_month in ISO (legacy); or no filter (all rows).
+        Dates in ISO YYYY-MM-DD, always day 01.
         """
         with self._get_connection() as conn:
             return _q_get_ipca_indice(
@@ -310,7 +309,7 @@ class Database:
 
     def get_ipca_indice_last_months(self, months: int) -> pd.DataFrame:
         """
-        Retorna os últimos `months` registros de IPCA_INDICE (ordem ascendente por ref_month).
+        Return the last `months` IPCA_INDICE rows (ascending by ref_month).
         """
         with self._get_connection() as conn:
             return _q_get_ipca_indice_last_months(conn, months=int(months))
@@ -328,10 +327,10 @@ class Database:
         last: Optional[int] = None,
     ) -> pd.DataFrame:
         """
-        Consulta projeções (tabela PROJECOES).
+        Query projections (PROJECOES table).
 
-        Modos para ref_month: last=N; start_year/start_month/end_year/end_month (range);
-        ref_month exato (MM/YYYY); ou tudo. data_coleta em ISO YYYY-MM-DD.
+        ref_month modes: last=N; start_year/start_month/end_year/end_month (range);
+        exact ref_month (MM/YYYY); or all rows. data_coleta in ISO YYYY-MM-DD.
         """
         with self._get_connection() as conn:
             return _q_get_projecoes(
@@ -349,8 +348,8 @@ class Database:
 
     def get_feriados(self) -> pd.DataFrame:
         """
-        Consulta feriados nacionais (tabela FERIADOS).
-        Coluna `data` em str "YYYY-MM-DD".
+        Query national holidays (FERIADOS table).
+        Column `data` as str "YYYY-MM-DD".
         """
         with self._get_connection() as conn:
             return _q_get_feriados(conn)
@@ -364,7 +363,7 @@ class Database:
         status: Optional[str] = None,
     ) -> pd.DataFrame:
         """
-        Consulta a tabela `job_runs`.
+        Query the `job_runs` table.
         """
         with self._get_connection() as conn:
             return _q_get_job_runs(
@@ -378,24 +377,24 @@ class Database:
 
     def get_schema_migrations(self) -> pd.DataFrame:
         """
-        Consulta a tabela `schema_migrations`.
+        Query the `schema_migrations` table.
         """
         with self._get_connection() as conn:
             return _q_get_schema_migrations(conn)
     
     # ============================================================================
-    # JOBS (API PÚBLICA)
+    # JOBS (PUBLIC API)
     # ============================================================================
     
     def run_daily(self, date: Optional[str] = None) -> dict:
         """
-        Executa job diário end-to-end (todos os pipelines).
-        
+        Run the end-to-end daily job (all pipelines).
+
         Args:
-            date: Data no formato 'YYYY-MM-DD' (None = hoje)
-            
+            date: Date 'YYYY-MM-DD' (None = today)
+
         Returns:
-            dict com resultados de cada pipeline
+            dict with per-pipeline results
         """
         return run_daily(date)
     
@@ -406,33 +405,33 @@ class Database:
         pipeline: Optional[str] = None,
     ) -> dict:
         """
-        Executa backfill para um intervalo de datas.
-        
+        Run backfill over a date range.
+
         Args:
-            start_date: Data inicial no formato 'YYYY-MM-DD'
-            end_date: Data final no formato 'YYYY-MM-DD'
-            pipeline: Nome do pipeline (None = todos)
-            
+            start_date: Start 'YYYY-MM-DD'
+            end_date: End 'YYYY-MM-DD'
+            pipeline: Pipeline name (None = all)
+
         Returns:
-            dict com resultados
+            dict with results
         """
         return backfill(start_date, end_date, pipeline)
     
     def run_one(self, pipeline: str, date: str) -> dict:
         """
-        Executa um único pipeline para uma data específica (debug).
-        
+        Run a single pipeline for one date (debug).
+
         Args:
-            pipeline: Nome do pipeline
-            date: Data no formato 'YYYY-MM-DD'
-            
+            pipeline: Pipeline name
+            date: Date 'YYYY-MM-DD'
+
         Returns:
-            dict com resultado do pipeline
+            dict with pipeline result
         """
         return run_one(pipeline, date)
     
     # ============================================================================
-    # OPERAÇÕES COM TÍTULOS PÚBLICOS
+    # GOVERNMENT BOND OPERATIONS
     # ============================================================================
     
     def get_titulo_publico_id(
@@ -441,14 +440,14 @@ class Database:
         data_vencimento: str,
     ) -> Optional[Tuple[str, str]]:
         """
-        Busca a PK de um título público.
-        
+        Look up the primary key for a government bond.
+
         Args:
-            tipo_titulo: Tipo do título (ex: 'NTN-B', 'LFT', 'LTN')
-            data_vencimento: Data de vencimento no formato 'YYYY-MM-DD'
-            
+            tipo_titulo: Bond type (e.g. 'NTN-B', 'LFT', 'LTN')
+            data_vencimento: Maturity 'YYYY-MM-DD'
+
         Returns:
-            (tipo_titulo, data_vencimento) se encontrado, None caso contrário.
+            (tipo_titulo, data_vencimento) if found, else None.
         """
         with self._get_connection() as conn:
             row = TitulosPublicosRepo.get_by_pk(conn, tipo_titulo, data_vencimento)
@@ -467,19 +466,19 @@ class Database:
         status: str = "ATIVO",
     ) -> Tuple[str, str]:
         """
-        Busca ou cria um título público.
-        
+        Get or create a government bond row.
+
         Args:
-            tipo_titulo: Tipo do título (ex: 'NTN-B', 'LFT', 'LTN')
-            data_vencimento: Data de vencimento no formato 'YYYY-MM-DD'
-            expressao: Expressão do título (opcional)
-            data_base: Data base do título (opcional)
-            codigo_selic: Código SELIC (opcional)
-            codigo_isin: Código ISIN (opcional)
-            status: Status do título (default: 'ATIVO')
-            
+            tipo_titulo: Bond type (e.g. 'NTN-B', 'LFT', 'LTN')
+            data_vencimento: Maturity 'YYYY-MM-DD'
+            expressao: Bond expression (optional)
+            data_base: Base date (optional)
+            codigo_selic: SELIC code (optional)
+            codigo_isin: ISIN (optional)
+            status: Status (default: 'ATIVO')
+
         Returns:
-            PK do título (tipo_titulo, data_vencimento).
+            Primary key (tipo_titulo, data_vencimento).
         """
         with self._get_connection() as conn:
             titulo_id = TitulosPublicosRepo.get_or_create(
@@ -496,18 +495,18 @@ class Database:
             return titulo_id
     
     # ============================================================================
-    # OPERAÇÕES COM CONTRATOS BMF
+    # BMF CONTRACT OPERATIONS
     # ============================================================================
     
     def contrato_bmf_exists(self, ticker: str) -> bool:
         """
-        Verifica se um contrato BMF existe.
-        
+        Return whether a BMF contract exists.
+
         Args:
-            ticker: Ticker do contrato (ex: 'DI1F26')
-            
+            ticker: Contract ticker (e.g. 'DI1F26')
+
         Returns:
-            True se existe, False caso contrário.
+            True if it exists, False otherwise.
         """
         with self._get_connection() as conn:
             return ContratosBmfRepo.exists(conn, ticker)
@@ -519,15 +518,15 @@ class Database:
         data_vencimento: Optional[str] = None,
     ) -> str:
         """
-        Busca ou cria um contrato BMF.
-        
+        Get or create a BMF contract.
+
         Args:
-            ticker: Ticker do contrato (ex: 'DI1F26')
-            codigo_isin: Código ISIN do contrato (opcional)
-            data_vencimento: Data de vencimento no formato 'YYYY-MM-DD' (opcional)
-            
+            ticker: Contract ticker (e.g. 'DI1F26')
+            codigo_isin: ISIN (optional)
+            data_vencimento: Maturity 'YYYY-MM-DD' (optional)
+
         Returns:
-            Ticker do contrato (sempre o mesmo que foi passado).
+            The contract ticker (same as input).
         """
         with self._get_connection() as conn:
             ticker_result = ContratosBmfRepo.get_or_create(
@@ -540,19 +539,19 @@ class Database:
             return ticker_result
     
     # ============================================================================
-    # OPERAÇÕES DE CONSULTA (Datas)
+    # DATE QUERIES
     # ============================================================================
     
     def get_max_date(self, table: str, date_col: str) -> Optional[str]:
         """
-        Retorna a data máxima de uma coluna em uma tabela.
-        
+        Maximum date value in `date_col` for `table`.
+
         Args:
-            table: Nome da tabela
-            date_col: Nome da coluna de data
-            
+            table: Table name
+            date_col: Date column name
+
         Returns:
-            Data máxima no formato 'YYYY-MM-DD' ou None se a tabela estiver vazia.
+            Max date 'YYYY-MM-DD', or None if the table is empty.
         """
         return _get_max_date(table, date_col)
     
@@ -565,21 +564,21 @@ class Database:
         skip_weekends: bool = True,
     ) -> list[str]:
         """
-        Retorna lista de datas faltantes em uma tabela.
-        
-        Regra:
-        - Se a tabela tem datas: começa no dia seguinte ao MAX(date_col)
-        - Se não tem: começa em default_start
-        
+        List missing dates for a table.
+
+        Rule:
+        - If the table has dates: start the day after MAX(date_col)
+        - Otherwise: start at default_start
+
         Args:
-            table: Nome da tabela
-            date_col: Nome da coluna de data
-            default_start: Data inicial padrão se a tabela estiver vazia
-            end_date: Data final (default: ontem)
-            skip_weekends: Se True, pula finais de semana
-            
+            table: Table name
+            date_col: Date column name
+            default_start: Default start if the table is empty
+            end_date: End date (default: yesterday)
+            skip_weekends: If True, skip weekends
+
         Returns:
-            Lista de datas no formato 'YYYY-MM-DD'.
+            List of dates 'YYYY-MM-DD'.
         """
         return _missing_dates_for_table(
             table=table,
@@ -595,9 +594,9 @@ class Database:
         layer: str = "bronze",
     ) -> Optional[str]:
         """
-        Última data de negócio com artefato não vazio na camada raw/silver.
+        Last business date with a non-empty artifact in raw/silver.
 
-        Distinto de get_max_date (Gold/SQLite): reflete o que a extração já obteve.
+        Unlike get_max_date (Gold/SQLite): reflects what extraction has produced.
         """
         from rf_lake.watermarks import get_watermark
 
@@ -605,7 +604,7 @@ class Database:
 
     def get_freshness_summary(self) -> "pd.DataFrame":
         """
-        Resumo por dataset: última data bronze, silver e Gold (MAX no SQLite).
+        Per-dataset summary: last bronze/silver dates and Gold MAX in SQLite.
         """
         import pandas as pd
 
@@ -630,22 +629,22 @@ class Database:
         return pd.DataFrame(rows)
     
     # ============================================================================
-    # OPERAÇÕES DIRETAS COM REPOSITÓRIOS (Acesso Avançado)
+    # DIRECT REPOSITORY ACCESS (advanced)
     # ============================================================================
     
     @contextmanager
     def transaction(self):
         """
-        Context manager para executar operações em uma transação.
-        
-        Útil quando você precisa fazer múltiplas operações atômicas.
-        
-        Exemplo:
+        Context manager that runs operations in a transaction.
+
+        Use when multiple steps must commit atomically.
+
+        Example:
             with db.transaction() as conn:
-                # Múltiplas operações usando conn diretamente
+                # Multiple operations using conn directly
                 TitulosPublicosRepo.get_or_create(conn, ...)
                 LiquidacoesMercadoRepo.upsert(conn, ...)
-                # Commit automático ao sair do contexto
+                # Commits automatically on successful exit
         """
         conn = get_conn(self._db_path)
         try:
@@ -659,32 +658,32 @@ class Database:
     
     def execute_query(self, sql: str, params: tuple = ()) -> list[tuple]:
         """
-        Executa uma query SQL e retorna os resultados.
-        
-        ATENÇÃO: Use com cuidado. Prefira os métodos específicos quando possível.
-        
+        Run a SQL query and return all rows.
+
+        WARNING: Prefer higher-level methods when possible.
+
         Args:
-            sql: Query SQL
-            params: Parâmetros para a query (tupla)
-            
+            sql: SQL statement
+            params: Query parameters (tuple)
+
         Returns:
-            Lista de tuplas com os resultados.
+            List of result tuples.
         """
         with self._get_connection() as conn:
             return conn.execute(sql, params).fetchall()
     
     def execute_update(self, sql: str, params: tuple = ()) -> int:
         """
-        Executa uma atualização SQL (INSERT, UPDATE, DELETE).
-        
-        ATENÇÃO: Use com cuidado. Prefira os métodos específicos quando possível.
-        
+        Run a SQL update (INSERT, UPDATE, DELETE).
+
+        WARNING: Prefer higher-level methods when possible.
+
         Args:
-            sql: Query SQL
-            params: Parâmetros para a query (tupla)
-            
+            sql: SQL statement
+            params: Query parameters (tuple)
+
         Returns:
-            Número de linhas afetadas.
+            Number of affected rows.
         """
         with self._get_connection() as conn:
             cursor = conn.execute(sql, params)

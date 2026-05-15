@@ -1,9 +1,8 @@
 """
-Normalizadores por tabela (a definir).
+Per-table normalizers (to be expanded).
 
-Esta pasta é o destino das regras específicas de normalização por tabela/dataset.
+This package holds dataset/table-specific normalization rules.
 
-Por enquanto, os normalizadores são stubs (retornam o DF inalterado) e serão
-preenchidos a partir das decisões tomadas no notebook de simulação.
+Some normalizers are still stubs (return the DataFrame unchanged) and will be
+filled in from the simulation notebook decisions.
 """
-

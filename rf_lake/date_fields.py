@@ -1,4 +1,4 @@
-"""Colunas de data por dataset e helpers para normalização ISO."""
+"""Date columns per dataset and helpers for ISO normalization."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def date_candidates_for_layer(dataset: str, layer: str) -> list[str]:
 
 
 def _to_iso_date_string(val: object) -> str | None:
-    """Normaliza valor de data para YYYY-MM-DD."""
+    """Normalize a date value to YYYY-MM-DD."""
     if val is None or (isinstance(val, float) and pd.isna(val)):
         return None
     if hasattr(val, "isoformat"):
@@ -61,7 +61,7 @@ def _to_iso_date_string(val: object) -> str | None:
 
 
 def normalize_date_series(series: pd.Series, date_col: str) -> set[str]:
-    """Converte coluna de datas para conjunto de strings ISO YYYY-MM-DD."""
+    """Convert a date column to a set of ISO YYYY-MM-DD strings."""
     if series.empty:
         return set()
     if date_col == "ref_month":
@@ -83,7 +83,7 @@ def normalize_date_series(series: pd.Series, date_col: str) -> set[str]:
 
 
 def distinct_dates_in_df(df: pd.DataFrame, date_col_candidates: list[str]) -> list[str]:
-    """Datas distintas presentes no DataFrame (ordenadas)."""
+    """Distinct dates present in the DataFrame (sorted)."""
     if df.empty or not date_col_candidates:
         return []
     col = pick_date_column(df, date_col_candidates)
@@ -95,7 +95,7 @@ def distinct_dates_in_df(df: pd.DataFrame, date_col_candidates: list[str]) -> li
 def dates_present_in_dataframe(
     df: pd.DataFrame, dataset: str, layer: str = "bronze"
 ) -> list[str]:
-    """Datas distintas no DataFrame para segment_key / watermark."""
+    """Distinct dates in the DataFrame for segment_key / watermark."""
     candidates = date_candidates_for_layer(dataset, layer)
     return distinct_dates_in_df(df, candidates)
 

@@ -1,8 +1,8 @@
 ﻿"""
-Gerenciamento de conexões SQLite.
+SQLite connection management.
 
-Fornece funções para criar e gerenciar conexões com o banco de dados SQLite.
-Configurado para suportar múltiplos acessos simultâneos (WAL mode).
+Provides functions to create and manage SQLite database connections.
+Configured for concurrent access (WAL mode).
 """
 import sqlite3
 from pathlib import Path
@@ -13,37 +13,37 @@ from rf_lake.settings import DB_PATH
 
 def get_conn(db_path: Optional[Union[str, Path]] = None) -> sqlite3.Connection:
     """
-    Cria uma nova conexão com o banco de dados SQLite.
-    
-    Configurações aplicadas:
-    - Foreign keys habilitadas
-    - WAL mode (Write-Ahead Logging) para suportar múltiplos leitores simultâneos
-    - Synchronous mode NORMAL para melhor performance
-    - Timeout de 30 segundos para operações de lock
-    
+    Create a new SQLite database connection.
+
+    Settings applied:
+    - Foreign keys enabled
+    - WAL mode (Write-Ahead Logging) for concurrent readers
+    - Synchronous NORMAL for better performance
+    - 30 second timeout for lock operations
+
     Args:
-        db_path: Caminho opcional para o arquivo do banco de dados.
-                 Se não fornecido, usa o caminho padrão configurado.
-                 Pode ser string ou Path.
-    
+        db_path: Optional path to the database file.
+                 If omitted, uses the configured default path.
+                 May be str or Path.
+
     Returns:
-        Conexão SQLite configurada.
-    
+        Configured SQLite connection.
+
     Note:
-        A conexão retornada deve ser fechada explicitamente ou usada
-        em um context manager. Para uso automático, use Database.transaction().
+        Close the connection explicitly or use a context manager.
+        For automatic handling, use Database.transaction().
     """
     path = db_path or DB_PATH
     if isinstance(path, str):
         path = Path(path)
     
-    # Garante que o diretório existe
+    # Ensure parent directory exists
     path.parent.mkdir(parents=True, exist_ok=True)
     
-    # Cria conexão com timeout para operações de lock
+    # Create connection with lock timeout
     conn = sqlite3.connect(str(path), timeout=30)
     
-    # Configurações para suportar múltiplos acessos simultâneos
+    # Settings for concurrent access
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.execute("PRAGMA journal_mode = WAL;")
     conn.execute("PRAGMA synchronous = NORMAL;")
