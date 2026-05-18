@@ -49,6 +49,7 @@ python run_bronze.py daily              # até hoje, incremental por partição
 python run_bronze.py daily 2026-01-17
 python run_bronze.py one feriados
 python run_bronze.py one liquidacoes_mercado 2026-01-15
+python run_bronze.py one cdi 2026-01-15
 python run_bronze.py backfill 2026-01-01 2026-01-17
 python run_bronze.py backfill 2026-01-01 2026-01-17 mercado_secundario
 ```

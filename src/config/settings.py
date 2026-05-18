@@ -64,6 +64,10 @@ class BcbSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="BCB_", extra="ignore")
 
     base_url: str = "https://www4.bcb.gov.br/pom/demab/negociacoes/download"
+    sgs_base_url: str = "https://api.bcb.gov.br/dados/serie/bcdata.sgs"
+    cdi_series_id: int = 11
+    ptax_base_url: str = "https://ptax.bcb.gov.br/ptax_internet/consultaBoletim.do"
+    ptax_moeda_code: int = 61
     timeout: int = 30
     max_retries: int = 3
 

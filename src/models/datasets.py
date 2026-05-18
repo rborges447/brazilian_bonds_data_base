@@ -25,6 +25,7 @@ DATASETS: dict[str, DatasetConfig] = {
     "ipca_indice": DatasetConfig("ipca_indice", "run_always"),
     "projecoes": DatasetConfig("projecoes", "run_always"),
     "feriados": DatasetConfig("feriados", "run_always"),
+    "cdi": DatasetConfig("cdi", "missing_dates"),
 }
 
 

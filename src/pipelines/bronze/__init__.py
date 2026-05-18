@@ -12,7 +12,6 @@ from pipelines.bronze.reader import (
     read_range,
 )
 from pipelines.bronze.registry import EXTRACTORS
-from pipelines.bronze.tasks import DatasetTask, resolve_bronze_tasks
 
 __all__ = [
     "EXTRACTORS",
@@ -37,4 +36,8 @@ def __getattr__(name: str):
         from pipelines.bronze.pipeline import run_bronze, run_bronze_phase
 
         return {"run_bronze": run_bronze, "run_bronze_phase": run_bronze_phase}[name]
+    if name in ("DatasetTask", "resolve_bronze_tasks"):
+        from pipelines.bronze.tasks import DatasetTask, resolve_bronze_tasks
+
+        return {"DatasetTask": DatasetTask, "resolve_bronze_tasks": resolve_bronze_tasks}[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

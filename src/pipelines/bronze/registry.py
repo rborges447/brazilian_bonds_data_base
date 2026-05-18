@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from contracts import BronzeExtractor, ExtractResult
 from pipelines.bronze.extractors.ajustes_bmf import extract_ajustes_bmf
+from pipelines.bronze.extractors.cdi import extract_cdi
 from pipelines.bronze.extractors.feriados import extract_feriados
 from pipelines.bronze.extractors.ipca_indice import extract_ipca_indice
 from pipelines.bronze.extractors.leiloes import extract_leiloes
@@ -19,6 +20,7 @@ EXTRACTORS: dict[str, BronzeExtractor] = {
     "ipca_indice": extract_ipca_indice,
     "feriados": extract_feriados,
     "projecoes": extract_projecoes,
+    "cdi": extract_cdi,
 }
 
 
