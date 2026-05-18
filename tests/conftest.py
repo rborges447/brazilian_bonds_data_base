@@ -1,27 +1,14 @@
-"""Fixtures for data lake inspection tests."""
+"""Shared pytest fixtures."""
 
 from __future__ import annotations
 
-import os
-from datetime import date
-
 import pytest
 
-from rf_lake.settings import DATA_START_DATE
+from config.settings import get_settings
 
 
-def pytest_configure(config):
-    config.addinivalue_line(
-        "markers",
-        "integration: tests that read data/raw, data/silver and data/app.db",
-    )
-
-
-@pytest.fixture(scope="session")
-def start_date() -> str:
-    return os.getenv("LAKE_INSPECT_START", DATA_START_DATE).strip()
-
-
-@pytest.fixture(scope="session")
-def end_date() -> str:
-    return os.getenv("LAKE_INSPECT_END", date.today().isoformat()).strip()
+@pytest.fixture(autouse=True)
+def _clear_settings_cache() -> None:
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()

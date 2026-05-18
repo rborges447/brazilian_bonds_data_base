@@ -1,7 +1,7 @@
 [project]
 name = "brazil-fixed-income-analytics"
-version = "0.2.0"
-description = "Brazil fixed income analytics — refatoração"
+version = "0.1.0"
+description = "Fixed Income Pricing and Analytics"
 requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.24",
@@ -10,29 +10,34 @@ dependencies = [
     "pydantic>=2.0",
     "pydantic-settings>=2.0",
     "python-dotenv>=1.0",
-    "requests>=2.28",
+    "requests",
+    "xlrd >= 2.0.1",
     "sidrapy",
-    "xlrd>=2.0.1",
 ]
 
 [project.optional-dependencies]
+docgen = [
+    "matplotlib>=3.8",
+    "python-docx>=1.1",
+]
 dev = [
     "pytest>=8.0",
 ]
 
 [project.scripts]
-rf-analytics = "main:main"
+rf-lake-migrate = "rf_lake.gold.db.migrate:apply_migrations"
+rf-lake-daily = "rf_lake.jobs.run_daily:run_daily"
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools]
-py-modules = ["main"]
+where = ["."]
+include = ["rf_lake*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+markers = [
+    "integration: requer data/raw, data/silver e data/app.db populados",
+]
