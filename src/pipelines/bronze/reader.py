@@ -10,28 +10,26 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
+from contracts import BronzePartitionRef
 from models.dates import business_days, months_in_range
-from pipelines.bronze.partitioning import (
-    SNAPSHOT_VALUE,
-    get_partition_spec,
-    is_snapshot_dataset,
-)
+from pipelines.bronze.partitioning import SNAPSHOT_VALUE, get_partition_spec
 from pipelines.bronze.paths import bronze_dataset_dir, bronze_partition_path
-from pipelines.bronze.writer import partition_artifact_exists
+from pipelines.bronze.storage import partition_artifact_exists
 
-
-@dataclass(frozen=True)
-class BronzePartitionRef:
-    dataset: str
-    partition_key: str
-    partition_value: str
-    path: Path
+__all__ = [
+    "BronzePartitionRef",
+    "iter_partitions_in_range",
+    "list_partition_values",
+    "partition_values_for_range",
+    "read_partition",
+    "read_partitions",
+    "read_range",
+]
 
 
 def _partition_column_name(partition_key: str) -> str:

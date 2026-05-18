@@ -9,7 +9,9 @@ from datetime import date
 
 from config import get_settings
 from models.dates import business_days, months_in_range
-from models.datasets import PIPELINE_NAMES, get_dataset_config, resolve_bronze_tasks
+from models.datasets import get_dataset_config
+from pipelines.bronze.partitioning import PIPELINE_NAMES
+from pipelines.bronze.tasks import resolve_bronze_tasks
 from pipelines.bronze.incremental import missing_partition_values
 from pipelines.bronze.pipeline import run_bronze, run_bronze_phase
 

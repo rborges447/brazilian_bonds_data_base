@@ -1,6 +1,11 @@
 """Layer contracts (types and protocols only — no I/O)."""
 
-from contracts.bronze import BronzeExtractor, ExtractResult
+from contracts.bronze import (
+    BronzeExtractor,
+    BronzePartitionRef,
+    BronzeResult,
+    ExtractResult,
+)
 from contracts.providers import (
     AnbimaFeedClient,
     DateRangeDataFrameFetcher,
@@ -13,6 +18,8 @@ from contracts.providers import (
 __all__ = [
     "AnbimaFeedClient",
     "BronzeExtractor",
+    "BronzePartitionRef",
+    "BronzeResult",
     "DateRangeDataFrameFetcher",
     "DateRangeRecordFetcher",
     "ExtractResult",

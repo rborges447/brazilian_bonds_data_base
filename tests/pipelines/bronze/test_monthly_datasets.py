@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from models.datasets import resolve_bronze_tasks
+from pipelines.bronze.tasks import resolve_bronze_tasks
 from pipelines.bronze.extractors.ipca_indice import extract_ipca_indice
 from pipelines.bronze.extractors.projecoes import _months_to_fetch
 

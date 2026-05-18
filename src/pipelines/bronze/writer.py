@@ -10,15 +10,20 @@ import pandas as pd
 
 from pipelines.bronze.partitioning import DatasetPartitionSpec, get_partition_spec
 from pipelines.bronze.paths import bronze_partition_path
+from pipelines.bronze.storage import partition_artifact_exists
+
+__all__ = [
+    "partition_artifact_exists",
+    "write_dataframe_partitions",
+    "write_partition_json",
+    "write_partition_parquet",
+    "write_raw_json",
+    "write_raw_parquet",
+]
 
 
 def ensure_partition_dir(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-
-
-def partition_artifact_exists(dataset: str, partition_key: str, value: str, ext: str) -> bool:
-    path = bronze_partition_path(dataset, partition_key, value, ext)
-    return path.is_file() and path.stat().st_size > 0
 
 
 def write_raw_json(path: Path, payload: Any) -> Path:

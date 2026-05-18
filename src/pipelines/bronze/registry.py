@@ -18,18 +18,11 @@ EXTRACTORS: dict[str, BronzeExtractor] = {
     "leiloes": extract_leiloes,
     "ipca_indice": extract_ipca_indice,
     "feriados": extract_feriados,
+    "projecoes": extract_projecoes,
 }
 
 
-def extract_dataset(
-    name: str,
-    dates: list[str],
-    *,
-    projecoes_backfill: bool = False,
-) -> ExtractResult:
-    del projecoes_backfill
-    if name == "projecoes":
-        return extract_projecoes(dates)
+def extract_dataset(name: str, dates: list[str]) -> ExtractResult:
     fn = EXTRACTORS.get(name)
     if fn is None:
         raise ValueError(f"Dataset has no bronze extractor: {name}")

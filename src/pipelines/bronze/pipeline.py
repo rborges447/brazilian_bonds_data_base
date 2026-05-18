@@ -3,25 +3,13 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from pathlib import Path
 
 from config import get_settings
-from models.datasets import DatasetTask
+from contracts import BronzeResult
 from pipelines.bronze.registry import extract_dataset
+from pipelines.bronze.tasks import DatasetTask
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class BronzeResult:
-    name: str
-    status: str  # success | skipped | error
-    path: Path | None = None
-    row_count: int = 0
-    segment_keys: list[str] = field(default_factory=list)
-    dates_candidate: list[str] = field(default_factory=list)
-    error: str | None = None
 
 
 def run_bronze(

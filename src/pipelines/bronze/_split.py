@@ -89,7 +89,9 @@ def split_dataframe_by_partition(
 
 
 def iso_month_from_mes_ano(mes: int | str, ano: int | str) -> str:
-    return f"{int(ano):04d}-{int(mes):02d}-01"
+    from models.dates import iso_month_first
+
+    return iso_month_first(int(ano), int(mes))
 
 
 def months_from_candidate_dates(dates: list[str]) -> list[str]:

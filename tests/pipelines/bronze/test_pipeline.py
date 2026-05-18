@@ -7,7 +7,7 @@ import pytest
 
 from contracts import ExtractResult
 from models.dates import business_days
-from models.datasets import resolve_bronze_tasks
+from pipelines.bronze.tasks import resolve_bronze_tasks
 from pipelines.bronze.pipeline import run_bronze
 
 

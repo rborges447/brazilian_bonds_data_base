@@ -70,6 +70,8 @@ PARTITION_SPECS: dict[str, DatasetPartitionSpec] = {
     ),
 }
 
+PIPELINE_NAMES: tuple[str, ...] = tuple(PARTITION_SPECS.keys())
+
 SNAPSHOT_VALUE = "1"
 
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import inspect
-from pathlib import Path
 from typing import get_origin, get_type_hints
 
 import pandas as pd
@@ -11,7 +10,6 @@ from contracts import (
     AnbimaFeedClient,
     DateRangeDataFrameFetcher,
     DateRangeRecordFetcher,
-    ExtractResult,
     SidraIpcaProvider,
     SnapshotDataFrameFetcher,
     SnapshotDateListFetcher,
@@ -74,17 +72,3 @@ def test_date_range_record_fetcher() -> None:
 
 def test_snapshot_dataframe_fetcher_alias() -> None:
     assert get_origin(SnapshotDataFrameFetcher) is not None
-
-
-def test_extract_result_dataclass() -> None:
-    result = ExtractResult(
-        path=Path("data/raw/x.parquet"),
-        row_count=10,
-        segment_keys=["2026-01-01"],
-    )
-    assert result.path == Path("data/raw/x.parquet")
-    assert result.row_count == 10
-    assert result.segment_keys == ["2026-01-01"]
-
-    empty = ExtractResult(path=None, row_count=0, segment_keys=[])
-    assert empty.path is None
