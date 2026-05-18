@@ -1,5 +1,5 @@
 ﻿"""
-Client for BCB (Banco Central do Brasil) trade files.
+Client for BCB (Brazilian Central Bank) trade settlement files.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from rf_lake.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Base URL for BCB trade downloads
+# Base URL for BCB settlement (NegE) ZIP downloads
 DEFAULT_BASE_URL = "https://www4.bcb.gov.br/pom/demab/negociacoes/download"
 
 
@@ -38,8 +38,8 @@ def _ensure_date(data_ref: Union[str, date]) -> date:
 
 def format_ano_mes(data_ref: Union[str, date]) -> str:
     """
-    Format date as YYYYMM for Bacen NegE{YYYYMM}.ZIP files.
-    Ex.: 2025-08-15 -> '202508'
+    Format date as YYYYMM for BCB NegE{YYYYMM}.ZIP files.
+    E.g.: 2025-08-15 -> '202508'
     """
     dt = _ensure_date(data_ref)
     return f"{dt.year}{dt.month:02d}"
@@ -47,7 +47,7 @@ def format_ano_mes(data_ref: Union[str, date]) -> str:
 
 def build_negociacoes_url(data_ref: Union[str, date], base_url: str = DEFAULT_BASE_URL) -> str:
     """
-    Build Bacen download URL for the monthly ZIP of trades.
+    Build the BCB download URL for the monthly ZIP of settlements.
 
     Input:
       - data_ref: 'YYYY-MM-DD' (str) or datetime.date
@@ -69,7 +69,8 @@ def fetch_negociacoes_bruto_por_datas(
     base_url: str = DEFAULT_BASE_URL,
 ) -> pd.DataFrame:
     """
-    Read raw Bacen NegE{YYYYMM}.ZIP trade files for many dates and keep only requested dates.
+    Read raw BCB NegE{YYYYMM}.ZIP settlement CSVs across many calendar dates,
+    retaining only rows for the dates requested.
 
     Does **not** apply transforms beyond date filtering:
     - No general date parsing (except for filtering)
@@ -143,11 +144,11 @@ def fetch_negociacoes_bruto_por_datas(
         try:
             df_month = pd.read_csv(url, sep=sep, encoding=encoding, compression=compression)
         except Exception as ex:
-            logger.warning("Bacen: failed to read %s: %s", url, ex)
+            logger.warning("BCB settlements: failed to read %s: %s", url, ex)
             continue
 
         if df_month is None or df_month.empty:
-            logger.warning("Bacen: empty response for %s", url)
+            logger.warning("BCB settlements: empty response for %s", url)
             continue
 
         date_col = date_column
@@ -161,7 +162,7 @@ def fetch_negociacoes_bruto_por_datas(
 
         if date_col is None or date_col not in df_month.columns:
             logger.warning(
-                "Bacen: date column not found in %s. Columns: %s",
+                "BCB settlements: date column not found in %s. Columns: %s",
                 url,
                 list(df_month.columns),
             )
@@ -181,7 +182,7 @@ def fetch_negociacoes_bruto_por_datas(
             frames.append(df_filtered)
 
     if not frames:
-        logger.info("Bacen: no rows after date filter; returning empty DataFrame.")
+        logger.info("BCB settlements: no rows after date filter; returning empty DataFrame.")
         return pd.DataFrame()
 
     return pd.concat(frames, ignore_index=True, sort=False)

@@ -56,7 +56,7 @@ def to_dd_mm_yyyy(data: Union[str, date, datetime]) -> str:
 
 
 #
-# Portarias / editais flow was removed by product decision.
+# Official notices / auction-bulletin ingestion was removed by product decision.
 # Only the Results endpoint remains.
 #
 
@@ -144,7 +144,7 @@ def get_resultados_by_dates(
         return int(dd.split("/")[-1])
 
     years = sorted({_year_from_date_input(d) for d in dates})
-    logger.info(f"Tesouro results: fetching years={years} (requested_dates={len(dates)})")
+    logger.info(f"Treasury results API: fetching years={years} (requested_dates={len(dates)})")
 
     for year in years:
         last_err: Optional[Exception] = None
@@ -159,7 +159,7 @@ def get_resultados_by_dates(
                 if attempt < TESOURO_MAX_RETRIES:
                     time.sleep(0.6 * attempt)
                 else:
-                    logger.warning(f"Tesouro results: failed for year={year}: {e}")
+                    logger.warning(f"Treasury results API: failed for year={year}: {e}")
                     break
 
     return all_resultados

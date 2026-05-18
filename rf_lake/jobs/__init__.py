@@ -1,4 +1,4 @@
-"""Jobs rf_lake."""
+"""rf_lake job entry points (lazy imports)."""
 
 from typing import TYPE_CHECKING
 

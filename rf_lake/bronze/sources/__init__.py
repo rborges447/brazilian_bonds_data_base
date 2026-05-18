@@ -4,7 +4,7 @@ External data sources module: HTTP clients for external APIs.
 This module contains clients to fetch raw data from external sources:
 - ANBIMA (secondary market, projections, auctions)
 - BCB (market settlements)
-- Tesouro Direto
+- Treasury Direct — Brazilian government's retail bond auctions channel
 - UpToData (BMF adjustments)
 - Sidra/IBGE (IPCA)
 

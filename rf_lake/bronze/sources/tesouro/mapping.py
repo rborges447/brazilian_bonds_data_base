@@ -1,5 +1,5 @@
 """
-Map Tesouro API data to the canonical schema.
+Map Brazilian Treasury (auction API) payloads to the canonical schema.
 """
 
 from __future__ import annotations

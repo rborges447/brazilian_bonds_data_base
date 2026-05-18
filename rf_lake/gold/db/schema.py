@@ -209,7 +209,7 @@ PROJECOES_RENAME_MAP = {
 # RENAMES (API -> database) - continued
 # =========================
 
-# Auctions (Tesouro results)
+# Auctions (Treasury auction API results)
 LEILOES_RENAME_MAP = {
     "data_leilao": "data_referencia",
     "titulo": "tipo_titulo",

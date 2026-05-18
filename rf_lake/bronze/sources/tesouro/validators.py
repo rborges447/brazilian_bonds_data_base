@@ -1,5 +1,5 @@
 """
-Validate raw Tesouro API data.
+Validate raw Brazilian Treasury auction API data.
 """
 
 from __future__ import annotations

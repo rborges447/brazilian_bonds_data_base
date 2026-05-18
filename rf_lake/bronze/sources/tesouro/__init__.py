@@ -1,1 +1,1 @@
-"""National Treasury (Tesouro Nacional) data source."""
+"""Brazilian National Treasury data source."""

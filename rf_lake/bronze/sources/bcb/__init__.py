@@ -1,1 +1,1 @@
-"""BCB (Banco Central do Brasil) data source."""
+"""BCB (Brazilian Central Bank) data source."""
