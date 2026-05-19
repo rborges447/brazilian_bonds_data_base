@@ -75,6 +75,13 @@ PARTITION_SPECS: dict[str, DatasetPartitionSpec] = {
         artifact_ext="parquet",
         date_col_candidates=("data",),
     ),
+    "ptax": DatasetPartitionSpec(
+        dataset="ptax",
+        partition_key="data",
+        granularity="day",
+        artifact_ext="parquet",
+        date_col_candidates=("data",),
+    ),
 }
 
 PIPELINE_NAMES: tuple[str, ...] = tuple(PARTITION_SPECS.keys())

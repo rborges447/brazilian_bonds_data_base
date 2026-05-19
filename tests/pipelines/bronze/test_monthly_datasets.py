@@ -8,7 +8,7 @@ import pytest
 
 from pipelines.bronze.tasks import resolve_bronze_tasks
 from pipelines.bronze.extractors.ipca_indice import extract_ipca_indice
-from pipelines.bronze.extractors.projecoes import _months_to_fetch
+from pipelines.bronze.extractors.projecoes import _candidate_months
 
 
 def test_resolve_bronze_tasks_monthly_from_data_start(
@@ -35,7 +35,7 @@ def test_resolve_bronze_tasks_monthly_from_data_start(
 
 def test_months_to_fetch_uses_task_dates() -> None:
     dates = ["2026-01-01", "2026-02-01", "2026-03-01"]
-    assert _months_to_fetch(dates) == dates
+    assert _candidate_months(dates) == dates
 
 
 @patch("pipelines.bronze.extractors.ipca_indice.write_partition_parquet")

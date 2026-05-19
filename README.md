@@ -50,11 +50,26 @@ python run_bronze.py daily 2026-01-17
 python run_bronze.py one feriados
 python run_bronze.py one liquidacoes_mercado 2026-01-15
 python run_bronze.py one cdi 2026-01-15
+python run_bronze.py one ptax 2026-01-15
 python run_bronze.py backfill 2026-01-01 2026-01-17
 python run_bronze.py backfill 2026-01-01 2026-01-17 mercado_secundario
 ```
 
 Artefatos em `data/raw/{dataset}/{partition_key}={value}/part.{json|parquet}`.
+
+**Projeções ANBIMA (`projecoes`):** partições por `mes_referencia` (não pelo mês da consulta API). O `daily` re-pulla mês anterior, corrente e seguinte; novas coletas (`data_coleta`) são mescladas no JSON bronze sem apagar histórico.
+
+## Rodar silver (normalização canônica)
+
+```bash
+python run_silver.py init
+python run_silver.py daily
+python run_silver.py one cdi 2026-01-15
+python run_silver.py backfill 2026-01-01 2026-01-17 mercado_secundario
+```
+
+Artefatos em `data/silver/{dataset}/{partition_key}={value}/part.parquet`.  
+Partições mensais (`ipca_indice`, `projecoes`) permanecem mensais no disco; use `pipelines.silver.expand.read_monthly_as_daily` para expandir a dias úteis na leitura.
 
 ## Quick start
 

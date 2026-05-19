@@ -6,6 +6,7 @@ from contracts.bronze import (
     BronzeResult,
     ExtractResult,
 )
+from contracts.silver import SilverPartitionRef, SilverResult, SilverTransform
 from contracts.providers import (
     AnbimaFeedClient,
     DateRangeDataFrameFetcher,
@@ -16,6 +17,9 @@ from contracts.providers import (
 )
 
 __all__ = [
+    "SilverPartitionRef",
+    "SilverResult",
+    "SilverTransform",
     "AnbimaFeedClient",
     "BronzeExtractor",
     "BronzePartitionRef",

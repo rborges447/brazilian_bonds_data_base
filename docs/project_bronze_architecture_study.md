@@ -431,7 +431,7 @@ Não existe classe `Runner`; o “runner” é o script `run_bronze.py`.
 #### Extractors (padrões)
 
 1. **JSON por dia** — `mercado_secundario` usa [`_extract_json.py`](../src/pipelines/bronze/_extract_json.py).
-2. **JSON por mês** — `projecoes` (fetch ANBIMA por mês).
+2. **JSON por mês** — `projecoes` (fetch ANBIMA por mês; partição por `mes_referencia`; refresh diário dos meses ativos com merge de coletas).
 3. **Parquet por dia a partir de DF** — `liquidacoes_mercado`, `ajustes_bmf` via `write_dataframe_partitions`.
 4. **JSON leilões agrupados** — `leiloes` (lógica própria).
 5. **Snapshot** — `feriados`.

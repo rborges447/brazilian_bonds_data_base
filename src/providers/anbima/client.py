@@ -91,7 +91,41 @@ class AnbimaClient:
         return None
 
     def fetch_projecoes(self, mes: int | str, ano: int | str) -> Optional[Any]:
+        """
+        Projections for a calendar month/year (IPCA and IGP-M).
+
+        API fields: indice, tipo_projecao, data_coleta, mes_referencia (mm/aaaa),
+        variacao_projetada, data_validade.
+        """
         return self.fetch_by_mes_ano(self.projecoes_url, mes, ano)
+
+    def fetch_projecoes_latest(self) -> Optional[Any]:
+        """
+        Latest available projections (no mes/ano query params).
+
+        Per ANBIMA docs, returns the most recent month/year published when
+        mes and ano are omitted.
+        """
+        last_err: Exception | None = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                headers = self.auth.build_headers()
+                resp = requests.get(
+                    self.projecoes_url,
+                    headers=headers,
+                    timeout=self.timeout,
+                )
+                if resp.status_code == 404:
+                    return None
+                resp.raise_for_status()
+                return resp.json()
+            except Exception as exc:
+                last_err = exc
+                if attempt < self.max_retries:
+                    time.sleep(0.6 * attempt)
+                else:
+                    raise last_err from None
+        return None
 
     def fetch_projecoes_historico(
         self,

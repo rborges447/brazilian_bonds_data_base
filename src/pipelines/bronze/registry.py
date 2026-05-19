@@ -11,6 +11,7 @@ from pipelines.bronze.extractors.leiloes import extract_leiloes
 from pipelines.bronze.extractors.liquidacoes_mercado import extract_liquidacoes_mercado
 from pipelines.bronze.extractors.mercado_secundario import extract_mercado_secundario
 from pipelines.bronze.extractors.projecoes import extract_projecoes
+from pipelines.bronze.extractors.ptax import extract_ptax
 
 EXTRACTORS: dict[str, BronzeExtractor] = {
     "mercado_secundario": extract_mercado_secundario,
@@ -21,6 +22,7 @@ EXTRACTORS: dict[str, BronzeExtractor] = {
     "feriados": extract_feriados,
     "projecoes": extract_projecoes,
     "cdi": extract_cdi,
+    "ptax": extract_ptax,
 }
 
 
