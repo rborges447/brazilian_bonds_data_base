@@ -73,7 +73,7 @@ PARTITION_SPECS: dict[str, DatasetPartitionSpec] = {
         partition_key="data",
         granularity="day",
         artifact_ext="parquet",
-        date_col_candidates=("data",),
+        date_col_candidates=("data_referencia", "data"),
     ),
     "ptax": DatasetPartitionSpec(
         dataset="ptax",

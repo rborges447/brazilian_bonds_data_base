@@ -51,6 +51,9 @@ class AnbimaSettings(BaseSettings):
     projecoes_url: str = (
         "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/projecoes"
     )
+    estimativa_selic_url: str = (
+        "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/estimativa-selic"
+    )
 
 
 class FeriadosSettings(BaseSettings):

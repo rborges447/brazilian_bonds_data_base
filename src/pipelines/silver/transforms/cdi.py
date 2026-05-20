@@ -12,20 +12,15 @@ def normalize_partition(
     dates: list[str] | None = None,
 ) -> pd.DataFrame:
     if df_raw is None or df_raw.empty:
-        return pd.DataFrame(columns=["data_referencia", "cdi_aa"])
+        return pd.DataFrame(columns=["data_referencia", "cdi"])
 
     df = df_raw.copy()
-    if "data" in df.columns and hasattr(df["data"].dtype, "tz"):
-        df["data"] = df["data"].dt.tz_localize(None)
-    if "data" in df.columns:
-        df["data"] = pd.to_datetime(df["data"], errors="coerce").dt.strftime("%Y-%m-%d")
-
     rename_map = {k: v for k, v in CDI_RENAME_MAP.items() if k in df.columns}
     df = df.rename(columns=rename_map)
     df = normalize_numeric_columns(df, CDI_NUMERIC)
     df = normalize_date_columns(df, ["data_referencia"])
 
-    cols = [c for c in ("data_referencia", "cdi_aa") if c in df.columns]
+    cols = [c for c in ("data_referencia", "cdi") if c in df.columns]
     df = df[cols]
 
     filter_dates = dates if dates is not None else ([partition_value] if partition_value else None)

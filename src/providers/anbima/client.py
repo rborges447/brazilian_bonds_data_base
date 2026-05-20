@@ -17,6 +17,9 @@ MERCADO_SECUNDARIO_TPF = (
 )
 VNA = "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/vna"
 PROJECOES = "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/projecoes"
+ESTIMATIVA_SELIC = (
+    "https://api.anbima.com.br/feed/precos-indices/v1/titulos-publicos/estimativa-selic"
+)
 
 
 def _meses_anos_range(
@@ -51,6 +54,7 @@ class AnbimaClient:
         self.mercado_secundario_tpf_url = cfg.mercado_secundario_tpf_url
         self.vna_url = cfg.vna_url
         self.projecoes_url = cfg.projecoes_url
+        self.estimativa_selic_url = cfg.estimativa_selic_url
 
     def fetch_by_date(self, url: str, date_iso: str) -> Optional[Any]:
         params = {"data": date_iso}
@@ -78,6 +82,36 @@ class AnbimaClient:
             try:
                 headers = self.auth.build_headers()
                 resp = requests.get(url, headers=headers, params=params, timeout=self.timeout)
+                if resp.status_code == 404:
+                    return None
+                resp.raise_for_status()
+                return resp.json()
+            except Exception as exc:
+                last_err = exc
+                if attempt < self.max_retries:
+                    time.sleep(0.6 * attempt)
+                else:
+                    raise last_err from None
+        return None
+
+    def fetch_estimativa_selic(self, date_iso: str | None = None) -> Optional[Any]:
+        """
+        Daily SELIC rate estimate (% a.a./252 business days).
+
+        With ``date_iso``, queries ``?data=YYYY-MM-DD``. Without it, returns the
+        latest published estimate (no query params).
+        """
+        if date_iso is not None:
+            return self.fetch_by_date(self.estimativa_selic_url, date_iso)
+        last_err: Exception | None = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                headers = self.auth.build_headers()
+                resp = requests.get(
+                    self.estimativa_selic_url,
+                    headers=headers,
+                    timeout=self.timeout,
+                )
                 if resp.status_code == 404:
                     return None
                 resp.raise_for_status()

@@ -72,11 +72,10 @@ PROJECOES_NUMERIC = [
 ]
 
 CDI_RENAME_MAP = {
-    "data": "data_referencia",
-    "valor": "cdi_aa",
+    "estimativa_taxa_selic": "cdi",
 }
 
-CDI_NUMERIC = ["cdi_aa"]
+CDI_NUMERIC = ["cdi"]
 
 PTAX_RENAME_MAP = {
     "data": "data_referencia",
