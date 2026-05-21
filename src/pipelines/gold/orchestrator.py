@@ -6,7 +6,8 @@ Used by the gold pipeline (``run_gold`` in a later phase). No scraping, no .pkl 
 
 from __future__ import annotations
 
-from pipelines.bronze.partitioning import SNAPSHOT_VALUE, is_snapshot_dataset
+from pipelines.bronze.partitioning import SNAPSHOT_VALUE, get_partition_spec, is_snapshot_dataset
+from pipelines.silver.storage import partition_artifact_exists
 from pipelines.gold import registry
 from pipelines.gold._io import (
     read_silver_partition,
@@ -64,6 +65,15 @@ class GoldOrchestrator:
             if is_snapshot_dataset(dataset):
                 frames[dataset] = read_silver_partition(dataset, SNAPSHOT_VALUE)
             elif use_dates and ctx is not None:
+                spec = get_partition_spec(dataset)
+                loaded_dates = [
+                    d.strip()[:10]
+                    for d in ctx.dates
+                    if partition_artifact_exists(
+                        dataset, spec.partition_key, d.strip()[:10], "parquet"
+                    )
+                ]
+                ctx.extras[f"loaded_partitions_{dataset}"] = loaded_dates
                 frames[dataset] = read_silver_partitions(
                     dataset, ctx.dates, skip_missing=True
                 )
@@ -180,6 +190,22 @@ class GoldOrchestrator:
             extras=base.extras,
         )
         return self.materialize("liquidacoes_mercado", ctx=run_ctx)
+
+    def materialize_leiloes(
+        self,
+        dates: list[str],
+        ctx: BuilderContext | None = None,
+    ) -> GoldMaterialized:
+        """Materialize leilões for ``dates``: ``value`` is a DataFrame for SQL insert."""
+        base = ctx or BuilderContext()
+        run_ctx = BuilderContext(
+            dates=dates,
+            start_date=base.start_date,
+            end_date=base.end_date,
+            as_of_date=base.as_of_date,
+            extras=base.extras,
+        )
+        return self.materialize("leiloes", ctx=run_ctx)
 
     def materialize_many(
         self,

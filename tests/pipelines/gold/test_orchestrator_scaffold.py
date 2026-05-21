@@ -15,6 +15,7 @@ def test_builder_names() -> None:
         "bmf",
         "mercado_secundario",
         "liquidacoes_mercado",
+        "leiloes",
         "ipca_dict",
         "vna_lft",
     }

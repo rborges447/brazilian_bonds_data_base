@@ -88,7 +88,7 @@ class SidraSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SIDRA_", extra="ignore")
 
     max_retries: int = 3
-    default_period: str = "last 60"
+    default_period: str = "last 2"
     table_code_ipca: str = "6691"
     var_ipca_index: str = "2266"
     var_ipca_mom: str = "63"

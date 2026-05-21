@@ -20,6 +20,7 @@ BuilderName = Literal[
     "bmf",
     "mercado_secundario",
     "liquidacoes_mercado",
+    "leiloes",
     "ipca_dict",
     "vna_lft",
 ]
@@ -31,6 +32,7 @@ BUILDER_NAMES: tuple[BuilderName, ...] = (
     "bmf",
     "mercado_secundario",
     "liquidacoes_mercado",
+    "leiloes",
     "ipca_dict",
     "vna_lft",
 )
@@ -45,6 +47,7 @@ PASS_THROUGH_NAMES: tuple[BuilderName, ...] = (
     "bmf",
     "mercado_secundario",
     "liquidacoes_mercado",
+    "leiloes",
 )
 
 FeriadosGoldValue = list[str]
@@ -53,6 +56,7 @@ PtaxGoldValue = pd.DataFrame
 BmfGoldValue = pd.DataFrame
 MercadoSecundarioGoldValue = pd.DataFrame
 LiquidacoesMercadoGoldValue = pd.DataFrame
+LeiloesGoldValue = pd.DataFrame
 
 BUILDER_SILVER_DATASETS: dict[BuilderName, tuple[str, ...]] = {
     "feriados": ("feriados",),
@@ -61,6 +65,7 @@ BUILDER_SILVER_DATASETS: dict[BuilderName, tuple[str, ...]] = {
     "bmf": ("ajustes_bmf",),
     "mercado_secundario": ("mercado_secundario",),
     "liquidacoes_mercado": ("liquidacoes_mercado",),
+    "leiloes": ("leiloes",),
     "ipca_dict": ("ipca_indice", "projecoes"),
     "vna_lft": (),
 }

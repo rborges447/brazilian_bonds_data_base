@@ -15,6 +15,7 @@ from pipelines.gold.contracts import (
 from pipelines.gold.materializers.cdi import from_silver as cdi_from_silver
 from pipelines.gold.materializers.feriados import from_silver as feriados_from_silver
 from pipelines.gold.materializers.bmf import from_silver as bmf_from_silver
+from pipelines.gold.materializers.leiloes import from_silver as leiloes_from_silver
 from pipelines.gold.materializers.liquidacoes_mercado import (
     from_silver as liquidacoes_mercado_from_silver,
 )
@@ -32,6 +33,7 @@ MATERIALIZERS: dict[BuilderName, MaterializerFn] = {
     "bmf": bmf_from_silver,
     "mercado_secundario": mercado_secundario_from_silver,
     "liquidacoes_mercado": liquidacoes_mercado_from_silver,
+    "leiloes": leiloes_from_silver,
 }
 
 _NOT_IMPLEMENTED_MSG = (
