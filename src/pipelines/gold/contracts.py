@@ -57,6 +57,7 @@ BmfGoldValue = pd.DataFrame
 MercadoSecundarioGoldValue = pd.DataFrame
 LiquidacoesMercadoGoldValue = pd.DataFrame
 LeiloesGoldValue = pd.DataFrame
+IpcaDictGoldValue = pd.DataFrame
 
 BUILDER_SILVER_DATASETS: dict[BuilderName, tuple[str, ...]] = {
     "feriados": ("feriados",),

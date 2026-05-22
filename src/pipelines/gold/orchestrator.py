@@ -6,7 +6,10 @@ Used by the gold pipeline (``run_gold`` in a later phase). No scraping, no .pkl 
 
 from __future__ import annotations
 
+import pandas as pd
+
 from pipelines.bronze.partitioning import SNAPSHOT_VALUE, get_partition_spec, is_snapshot_dataset
+from pipelines.gold._feriados_source import read_feriados_gold
 from pipelines.silver.storage import partition_artifact_exists
 from pipelines.gold import registry
 from pipelines.gold._io import (
@@ -27,6 +30,31 @@ from pipelines.gold.contracts import (
 
 class GoldOrchestrator:
     """Load silver datasets and materialize one gold builder output."""
+
+    @staticmethod
+    def _month_range_for_ipca(dates: list[str]) -> tuple[str, str]:
+        """Silver monthly window: min(date) - 4 months through max(date) month-start."""
+        parsed = [pd.Timestamp(d.strip()[:10]).normalize() for d in dates]
+        start = min(parsed) - pd.DateOffset(months=4)
+        end = max(parsed)
+        return start.strftime("%Y-%m-01"), end.strftime("%Y-%m-01")
+
+    def resolve_feriados_set(self, ctx: BuilderContext | None = None) -> set[str]:
+        """
+        Holidays for business-day logic: gold FERIADOS first, else silver snapshot.
+
+        Override with ``ctx.extras['feriados']`` (iterable of ISO dates) for tests.
+        """
+        base = ctx or BuilderContext()
+        override = base.extras.get("feriados")
+        if override is not None:
+            return {str(d).strip()[:10] for d in override}
+
+        gold = read_feriados_gold()
+        if gold:
+            return set(gold)
+
+        return set(self.materialize_feriados().value)
 
     def read_silver(
         self,
@@ -61,9 +89,25 @@ class GoldOrchestrator:
             )
 
         frames: SilverFrames = {}
+        ipca_monthly_range = (
+            name == "ipca_dict"
+            and use_dates
+            and ctx is not None
+            and ctx.dates
+        )
+        if ipca_monthly_range:
+            start_month, end_month = self._month_range_for_ipca(ctx.dates)
+
         for dataset in datasets:
             if is_snapshot_dataset(dataset):
                 frames[dataset] = read_silver_partition(dataset, SNAPSHOT_VALUE)
+            elif ipca_monthly_range:
+                frames[dataset] = read_silver_range(
+                    dataset,
+                    start_month,
+                    end_month,
+                    only_existing=True,
+                )
             elif use_dates and ctx is not None:
                 spec = get_partition_spec(dataset)
                 loaded_dates = [
@@ -206,6 +250,28 @@ class GoldOrchestrator:
             extras=base.extras,
         )
         return self.materialize("leiloes", ctx=run_ctx)
+
+    def materialize_ipca_dict(
+        self,
+        dates: list[str],
+        ctx: BuilderContext | None = None,
+    ) -> GoldMaterialized:
+        """Materialize IPCA dict for ``dates`` (daily): ``value`` is a DataFrame for SQL."""
+        base = ctx or BuilderContext()
+        feriados = self.resolve_feriados_set(base)
+        run_ctx = BuilderContext(
+            dates=dates,
+            start_date=base.start_date,
+            end_date=base.end_date,
+            as_of_date=base.as_of_date,
+            extras={**base.extras, "feriados": feriados},
+        )
+        if not dates:
+            value = registry.build("ipca_dict", {}, run_ctx)
+            return GoldMaterialized(name="ipca_dict", silver={}, value=value)
+        silver = self.read_silver("ipca_dict", ctx=run_ctx)
+        value = registry.build("ipca_dict", silver, run_ctx)
+        return GoldMaterialized(name="ipca_dict", silver=silver, value=value)
 
     def materialize_many(
         self,

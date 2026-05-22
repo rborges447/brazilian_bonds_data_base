@@ -23,6 +23,8 @@ from pipelines.gold.materializers.mercado_secundario import (
     from_silver as mercado_secundario_from_silver,
 )
 from pipelines.gold.materializers.ptax import from_silver as ptax_from_silver
+from pipelines.gold.builders.ipca_dict import build_for_date
+from pipelines.gold.materializers.ipca_dict import to_dataframe as ipca_dict_to_dataframe
 
 MaterializerFn = Callable[[SilverFrames, BuilderContext], Any]
 
@@ -35,6 +37,43 @@ MATERIALIZERS: dict[BuilderName, MaterializerFn] = {
     "liquidacoes_mercado": liquidacoes_mercado_from_silver,
     "leiloes": leiloes_from_silver,
 }
+
+def _build_ipca_dict(silver: SilverFrames, ctx: BuilderContext) -> Any:
+    if "feriados" not in ctx.extras:
+        raise ValueError(
+            "ipca_dict requires ctx.extras['feriados'] (set by orchestrator)."
+        )
+    feriados = ctx.extras["feriados"]
+    if not ctx.dates:
+        return ipca_dict_to_dataframe([])
+
+    if "ipca_indice" not in silver or "projecoes" not in silver:
+        raise KeyError(
+            "Silver datasets 'ipca_indice' and 'projecoes' required for ipca_dict."
+        )
+    ipca_full = silver["ipca_indice"]
+    proj_full = silver["projecoes"]
+    if ipca_full is None or ipca_full.empty:
+        raise ValueError("Silver ipca_indice is empty. Run silver pipeline first.")
+    if proj_full is None or proj_full.empty:
+        raise ValueError("Silver projecoes is empty. Run silver pipeline first.")
+
+    pairs: list[tuple[str, dict]] = []
+    for raw_date in ctx.dates:
+        date = raw_date.strip()[:10]
+        pairs.append(
+            (
+                date,
+                build_for_date(
+                    date,
+                    ipca_monthly=ipca_full,
+                    projecoes=proj_full,
+                    feriados=feriados,
+                ),
+            )
+        )
+    return ipca_dict_to_dataframe(pairs)
+
 
 _NOT_IMPLEMENTED_MSG = (
     "Gold builder '{name}' is not implemented. "
@@ -54,6 +93,9 @@ def build(name: BuilderName, silver: SilverFrames, ctx: BuilderContext) -> Any:
 
     if name in MATERIALIZERS:
         return MATERIALIZERS[name](silver, ctx)
+
+    if name == "ipca_dict":
+        return _build_ipca_dict(silver, ctx)
 
     loaded = ", ".join(silver.keys()) or "(empty)"
     raise NotImplementedError(

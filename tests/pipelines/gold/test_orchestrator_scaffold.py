@@ -43,3 +43,8 @@ def test_is_snapshot_only_feriados() -> None:
 def test_registry_build_cdi_requires_ctx_dates() -> None:
     with pytest.raises(ValueError, match="requires ctx.dates"):
         registry.build("cdi", {}, BuilderContext())
+
+
+def test_registry_build_ipca_dict_requires_feriados_key_in_extras() -> None:
+    with pytest.raises(ValueError, match="feriados"):
+        registry.build("ipca_dict", {}, BuilderContext(dates=["2026-05-15"]))
