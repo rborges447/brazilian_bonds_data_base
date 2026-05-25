@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from models.dates import months_in_range
+from app.core.dates import months_in_range
 
 
 def test_months_in_range_inclusive() -> None:

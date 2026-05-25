@@ -4,7 +4,7 @@ import importlib
 
 
 def test_providers_public_exports() -> None:
-    pkg = importlib.import_module("providers")
+    pkg = importlib.import_module("app.providers")
     expected = {
         "AnbimaAuth",
         "AnbimaClient",
@@ -23,11 +23,11 @@ def test_providers_public_exports() -> None:
 
 def test_subpackages_import() -> None:
     for module in (
-        "providers.anbima",
-        "providers.feriados",
-        "providers.bcb",
-        "providers.tesouro",
-        "providers.sidra",
-        "providers.uptodata",
+        "app.providers.anbima",
+        "app.providers.feriados",
+        "app.providers.bcb",
+        "app.providers.tesouro",
+        "app.providers.sidra",
+        "app.providers.uptodata",
     ):
         importlib.import_module(module)

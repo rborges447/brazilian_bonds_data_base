@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from contracts import BronzePartitionRef, BronzeResult, ExtractResult
-from pipelines.bronze.partitioning import PARTITION_SPECS, PIPELINE_NAMES
-from pipelines.bronze.registry import EXTRACTORS
-from models.datasets import DATASETS
+from app.contracts import BronzePartitionRef, BronzeResult, ExtractResult
+from app.core.partitioning import PARTITION_SPECS, PIPELINE_NAMES
+from app.lake.bronze.registry import EXTRACTORS
+from app.core.datasets import DATASETS
 
 
 def test_extract_result_dataclass() -> None:

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from config.paths import PROJECT_ROOT
-from config.settings import PathSettings, get_settings
+from app.config.paths import PROJECT_ROOT
+from app.config.settings import PathSettings, get_settings
 
 
 def test_data_start_date_validation() -> None:

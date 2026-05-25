@@ -5,8 +5,8 @@ from typing import get_origin, get_type_hints
 
 import pandas as pd
 
-from config.settings import AnbimaSettings
-from contracts import (
+from app.config.settings import AnbimaSettings
+from app.contracts import (
     AnbimaFeedClient,
     DateRangeDataFrameFetcher,
     DateRangeRecordFetcher,
@@ -14,12 +14,12 @@ from contracts import (
     SnapshotDataFrameFetcher,
     SnapshotDateListFetcher,
 )
-from providers.anbima import AnbimaClient
-from providers.bcb import fetch_negociacoes_bruto_por_datas
-from providers.feriados import fetch_feriados
-from providers.sidra import SidraIpcaClient
-from providers.tesouro import get_resultados_by_dates
-from providers.uptodata import scrap_ajustes_bmf_for_dates
+from app.providers.anbima import AnbimaClient
+from app.providers.bcb import fetch_negociacoes_bruto_por_datas
+from app.providers.feriados import fetch_feriados
+from app.providers.sidra import SidraIpcaClient
+from app.providers.tesouro import get_resultados_by_dates
+from app.providers.uptodata import scrap_ajustes_bmf_for_dates
 
 
 def _first_param_accepts_sequence(fn: object) -> bool:

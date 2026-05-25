@@ -246,7 +246,7 @@ Artefato em data/raw/...  (NÃO passa por database nesta fase)
 ### Logs e erros
 
 - Logging configurado em `run_bronze._setup_logging()` e parcialmente em `AppSettings._apply_log_level()`.
-- Logger do pipeline: `pipelines.bronze.pipeline`.
+- Logger do pipeline: `lake.bronze.pipeline`.
 - Erros no extrator são **capturados** em `run_bronze` e viram `BronzeResult(status="error", error=str(exc))`.
 - Providers fazem retry (ANBIMA, BCB, Tesouro, SIDRA) com backoff simples.
 
@@ -538,7 +538,7 @@ Não existe classe `Runner`; o “runner” é o script `run_bronze.py`.
 
 ### Riscos de acoplamento
 
-- `models/datasets` depende de `pipelines.bronze.partitioning`.
+- `models/datasets` depende de `lake.bronze.partitioning`.
 - Cadeia `incremental` → `reader` → `storage` (baixo risco).
 - Notebooks importando `models.datasets.PIPELINE_NAMES` — OK se partitioning estável.
 

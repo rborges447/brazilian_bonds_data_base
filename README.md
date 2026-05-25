@@ -1,94 +1,101 @@
 # Brazil Fixed Income Analytics
 
-Refatoração em andamento. O código anterior (`rf_lake`, jobs, testes antigos) está em [`legacy/`](legacy/).
+Refatoração em andamento. Código legado em [`legacy/`](legacy/).
 
-## Estrutura nova
+## Estrutura (`src/app/`)
 
 ```
 src/
-  config/          # configuração e settings
-  database/        # conexões e sessões
-  models/          # modelos de domínio
-  contracts/       # interfaces e DTOs
-  providers/       # fontes externas (APIs, arquivos)
-  repositories/    # persistência
-  pipelines/
-    bronze/        # ingestão bruta
-    silver/        # normalização
-    gold/          # camada analítica / persistência final
-  agents/          # agentes (futuro)
-  services/        # orquestração e casos de uso
-  main.py          # entry point
-tests/
-migrations/
+  main.py              # rf-analytics bronze|silver|gold|migrate
+  app/
+    cli/               # entrypoints bronze, silver, gold
+    config/            # settings, paths
+    core/              # dates, datasets, partitioning
+    contracts/         # DTOs e protocols
+    providers/         # ANBIMA, BCB, Tesouro, SIDRA, feriados, UpToData
+    lake/
+      bronze/          # ingestão raw
+      silver/          # normalização Parquet
+      gold/            # materialização analítica
+    database/          # SQLite migrations
+    repositories/      # persistência gold
+    services/          # facades (sem lógica IPCA duplicada)
 ```
 
 ## Configuração
 
-Copie [`.env.example`](.env.example) para `.env` na raiz do repositório. Variáveis agrupadas por fonte:
-
-- **Paths:** `DATA_ROOT`, `SQLITE_DB_PATH`, `DATA_START_DATE`
-- **ANBIMA API:** `ANBIMA_CLIENT_ID`, `ANBIMA_CLIENT_SECRET`, …
-- **Feriados (XLS público):** `FERIADOS_XLS_URL`, `FERIADOS_TIMEOUT`
-- **BCB / Tesouro / SIDRA / UpToData:** prefixos `BCB_`, `TESOURO_`, `SIDRA_`, `UPTODATA_`
-
-Uso em código: `from config import get_settings` → `get_settings().anbima`, `.paths`, `.db_path`, etc.
-
-## Providers
-
-Clientes por fonte em `src/providers/` (`anbima`, `feriados`, `bcb`, `tesouro`, `sidra`, `uptodata`). Cada um recebe sub-settings via `get_settings()` ou injeção explícita.
-
-UpToData exige `UPTODATA_PASTA_INTEREST_RATE_BASE` e `UPTODATA_ARQUIVO_INTEREST_RATE_BASE` no `.env` local para ajustes BMF.
-
-## Rodar bronze (camada raw, partições Hive)
-
-```bash
+```powershell
+python -m venv venv
+.\venv\Scripts\activate
 pip install -e ".[dev]"
-python run_bronze.py init
-python run_bronze.py daily              # até hoje, incremental por partição
-python run_bronze.py daily 2026-01-17
-python run_bronze.py one feriados
-python run_bronze.py one liquidacoes_mercado 2026-01-15
-python run_bronze.py one cdi 2026-01-15
-python run_bronze.py one ptax 2026-01-15
-python run_bronze.py backfill 2026-01-01 2026-01-17
-python run_bronze.py backfill 2026-01-01 2026-01-17 mercado_secundario
+copy .env.example .env
 ```
 
-Artefatos em `data/raw/{dataset}/{partition_key}={value}/part.{json|parquet}`.
+Variáveis: `DATA_ROOT`, `SQLITE_DB_PATH`, `DATA_START_DATE`, `ANBIMA_*`, `BCB_*`, etc. — ver [`.env.example`](.env.example).
 
-**Projeções ANBIMA (`projecoes`):** partições por `mes_referencia` (não pelo mês da consulta API). O `daily` re-pulla mês anterior, corrente e seguinte; novas coletas (`data_coleta`) são mescladas no JSON bronze sem apagar histórico.
+```python
+from app.config import get_settings
+from app import get_settings  # atalho
+```
 
-## Rodar silver (normalização canônica)
+## Rodar pipelines
 
-```bash
+### Bronze
+
+```powershell
+python run_bronze.py init
+python run_bronze.py daily
+python run_bronze.py one cdi 2026-05-15
+python run_bronze.py backfill 2026-01-01 2026-05-15 mercado_secundario
+```
+
+### Silver
+
+```powershell
 python run_silver.py init
 python run_silver.py daily
-python run_silver.py one cdi 2026-01-15
-python run_silver.py backfill 2026-01-01 2026-01-17 mercado_secundario
+python run_silver.py one cdi 2026-05-15
+python run_silver.py backfill 2026-01-01 2026-05-15
 ```
 
-Artefatos em `data/silver/{dataset}/{partition_key}={value}/part.parquet`.  
-Partições mensais (`ipca_indice`, `projecoes`) permanecem mensais no disco; use `pipelines.silver.expand.read_monthly_as_daily` para expandir a dias úteis na leitura.
+### Gold (materialização + SQLite schema v2)
 
-## Quick start
+```powershell
+python run_gold.py migrate
+python run_gold.py one feriados --persist
+python run_gold.py one cdi 2026-05-15 --persist
+python run_gold.py one ipca_dict 2026-05-15 --persist
+python run_gold.py backfill 2026-05-01 2026-05-15 ipca_dict --persist
+```
 
-```bash
-python -m venv venv
-venv\Scripts\activate          # Windows
-pip install -e ".[dev]"
-copy .env.example .env         # ajuste variáveis locais
+Gold schema: [`docs/gold_schema_v2.md`](docs/gold_schema_v2.md). Migrations em `src/app/database/migrations/`. Apague `data/app.db` antes de `migrate` se o arquivo for de um schema antigo.
+
+### Dispatcher unificado
+
+```powershell
+rf-analytics bronze init
+rf-analytics silver daily
+rf-analytics gold one ipca_dict 2026-05-15
+rf-analytics migrate
+```
+
+## Testes
+
+```powershell
 pytest tests/ -q
 ```
 
-## Código legado
+## Documentação
 
-Para rodar o data lake antigo:
+- [docs/project_architecture_and_dependencies.md](docs/project_architecture_and_dependencies.md)
+- [docs/gold_schema_v2.md](docs/gold_schema_v2.md)
+- [docs/code_reference_for_ai.md](docs/code_reference_for_ai.md)
+- Regenerar: `python docs/_build_docs.py`
 
-```bash
+## Legado
+
+```powershell
 cd legacy
 pip install -e ".[dev]"
 python run_lake.py migrate
 ```
-
-Documentação completa do lake antigo: [`legacy/README.md`](legacy/README.md).

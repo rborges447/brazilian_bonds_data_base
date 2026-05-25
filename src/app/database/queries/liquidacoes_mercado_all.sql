@@ -1,0 +1,1 @@
+SELECT tipo_titulo, data_vencimento, data_referencia, qtd_operacoes, qtd_titulos, pu_medio, expressao, data_base, codigo_selic, codigo_isin, status FROM LIQUIDACOES_MERCADO ORDER BY data_referencia, tipo_titulo, data_vencimento

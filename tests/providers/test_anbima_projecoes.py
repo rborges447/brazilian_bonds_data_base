@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from config.settings import AnbimaSettings
-from providers.anbima.client import AnbimaClient
+from app.config.settings import AnbimaSettings
+from app.providers.anbima.client import AnbimaClient
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def anbima_client() -> AnbimaClient:
     return client
 
 
-@patch("providers.anbima.client.requests.get")
+@patch("app.providers.anbima.client.requests.get")
 def test_fetch_projecoes_latest_no_query_params(
     mock_get: MagicMock, anbima_client: AnbimaClient
 ) -> None:
@@ -31,7 +31,7 @@ def test_fetch_projecoes_latest_no_query_params(
     assert "params" not in mock_get.call_args.kwargs or not mock_get.call_args.kwargs.get("params")
 
 
-@patch("providers.anbima.client.requests.get")
+@patch("app.providers.anbima.client.requests.get")
 def test_fetch_projecoes_latest_404_returns_none(
     mock_get: MagicMock, anbima_client: AnbimaClient
 ) -> None:

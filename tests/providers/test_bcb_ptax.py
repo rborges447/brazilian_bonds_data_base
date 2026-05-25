@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from config import BcbSettings
-from providers.bcb.ptax import (
+from app.config import BcbSettings
+from app.providers.bcb.ptax import (
     build_ptax_fechamento_url,
     fetch_ptax_fechamento,
     fetch_ptax_usd,
@@ -27,7 +27,7 @@ def test_build_ptax_url_formats_dates() -> None:
     assert "DATAFIM=18%2F05%2F2026" in url or "DATAFIM=18/05/2026" in url
 
 
-@patch("providers.bcb.ptax.requests.get")
+@patch("app.providers.bcb.ptax.requests.get")
 def test_fetch_ptax_parses_csv(mock_get: MagicMock) -> None:
     cfg = BcbSettings(max_retries=1)
     response = MagicMock()
@@ -45,7 +45,7 @@ def test_fetch_ptax_parses_csv(mock_get: MagicMock) -> None:
     assert str(df["data"].iloc[0].date()) == "2026-04-20"
 
 
-@patch("providers.bcb.ptax.requests.get")
+@patch("app.providers.bcb.ptax.requests.get")
 def test_fetch_empty_returns_empty_df(mock_get: MagicMock) -> None:
     cfg = BcbSettings(max_retries=1)
     response = MagicMock()
@@ -70,14 +70,14 @@ def test_fetch_empty_returns_empty_df(mock_get: MagicMock) -> None:
 
 
 def test_csv_text_ignores_html_response() -> None:
-    from providers.bcb.ptax import _csv_text_to_dataframe
+    from app.providers.bcb.ptax import _csv_text_to_dataframe
 
     html = "<!DOCTYPE html><html><body>erro</body></html>"
     df = _csv_text_to_dataframe(html)
     assert df.empty
 
 
-@patch("providers.bcb.ptax.requests.get")
+@patch("app.providers.bcb.ptax.requests.get")
 def test_fetch_single_day_filters_to_requested_date(mock_get: MagicMock) -> None:
     cfg = BcbSettings(max_retries=1)
     response = MagicMock()
@@ -97,7 +97,7 @@ def test_fetch_single_day_filters_to_requested_date(mock_get: MagicMock) -> None
     assert "DATAFIM=15%2F05%2F2026" in mock_get.call_args[0][0] or "DATAFIM=15/05/2026" in mock_get.call_args[0][0]
 
 
-@patch("providers.bcb.ptax.fetch_ptax_fechamento")
+@patch("app.providers.bcb.ptax.fetch_ptax_fechamento")
 def test_fetch_ptax_usd_uses_moeda_from_settings(mock_fetch: MagicMock) -> None:
     mock_fetch.return_value = pd.DataFrame(columns=["data"])
     cfg = BcbSettings(ptax_moeda_code=61)

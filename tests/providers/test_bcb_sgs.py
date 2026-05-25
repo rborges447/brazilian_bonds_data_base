@@ -6,9 +6,9 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from config import BcbSettings
-from providers.bcb.cdi import fetch_cdi_daily
-from providers.bcb.sgs import (
+from app.config import BcbSettings
+from app.providers.bcb.cdi import fetch_cdi_daily
+from app.providers.bcb.sgs import (
     _split_period_in_10y_chunks,
     build_sgs_url,
     fetch_bcb_sgs_series,
@@ -44,7 +44,7 @@ def test_split_period_in_10y_chunks_rejects_inverted_range() -> None:
         _split_period_in_10y_chunks(date(2025, 1, 1), date(2020, 1, 1))
 
 
-@patch("providers.bcb.sgs.requests.get")
+@patch("app.providers.bcb.sgs.requests.get")
 def test_fetch_bcb_sgs_series_merges_chunks(mock_get: MagicMock) -> None:
     cfg = BcbSettings(
         sgs_base_url="https://api.bcb.gov.br/dados/serie/bcdata.sgs",
@@ -68,7 +68,7 @@ def test_fetch_bcb_sgs_series_merges_chunks(mock_get: MagicMock) -> None:
     mock_get.assert_called()
 
 
-@patch("providers.bcb.sgs.requests.get")
+@patch("app.providers.bcb.sgs.requests.get")
 def test_fetch_empty_range_returns_empty_df(mock_get: MagicMock) -> None:
     cfg = BcbSettings(max_retries=1)
     response = MagicMock()
@@ -82,7 +82,7 @@ def test_fetch_empty_range_returns_empty_df(mock_get: MagicMock) -> None:
     assert list(df.columns) == ["data", "valor"]
 
 
-@patch("providers.bcb.cdi.fetch_bcb_sgs_series")
+@patch("app.providers.bcb.cdi.fetch_bcb_sgs_series")
 def test_fetch_cdi_daily_uses_series_from_settings(mock_fetch: MagicMock) -> None:
     mock_fetch.return_value = pd.DataFrame(columns=["data", "valor"])
     cfg = BcbSettings(cdi_series_id=11)

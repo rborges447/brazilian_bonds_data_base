@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from config.settings import AnbimaSettings
-from providers.anbima.auth import AnbimaAuth
+from app.config.settings import AnbimaSettings
+from app.providers.anbima.auth import AnbimaAuth
 
 
 def test_anbima_auth_requires_credentials() -> None:
@@ -14,7 +14,7 @@ def test_anbima_auth_requires_credentials() -> None:
         AnbimaAuth(settings=cfg)
 
 
-@patch("providers.anbima.auth.requests.post")
+@patch("app.providers.anbima.auth.requests.post")
 def test_anbima_auth_fetches_token(mock_post: MagicMock) -> None:
     mock_post.return_value = MagicMock(
         status_code=200,

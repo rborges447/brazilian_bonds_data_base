@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from config.settings import get_settings
+from app.config.settings import get_settings
 
 
 @pytest.fixture(autouse=True)
