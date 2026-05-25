@@ -9,7 +9,8 @@ from pathlib import Path
 
 from app.database.connection import get_connection
 
-MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
+_BUILTIN_MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
+MIGRATIONS_DIR = _BUILTIN_MIGRATIONS_DIR
 
 
 @dataclass(frozen=True)
@@ -45,8 +46,12 @@ def _list_files(dirpath: Path) -> list[Migration]:
 
 def apply_migrations(
     db_path: Path | str | None = None,
-    migrations_dir: Path = MIGRATIONS_DIR,
+    migrations_dir: Path | None = None,
 ) -> None:
+    if migrations_dir is None:
+        from app.config import get_settings
+
+        migrations_dir = get_settings().migrations_dir
     if not migrations_dir.exists():
         raise FileNotFoundError(f"Migrations directory not found: {migrations_dir}")
 

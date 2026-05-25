@@ -1,2 +1,0 @@
-"""SIDRA (IBGE) data source."""
-

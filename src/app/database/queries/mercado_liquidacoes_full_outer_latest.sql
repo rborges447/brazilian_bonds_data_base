@@ -1,3 +1,14 @@
+WITH latest_dates AS (
+    SELECT data_referencia
+    FROM (
+        SELECT data_referencia FROM MERCADO_SECUNDARIO
+        UNION
+        SELECT data_referencia FROM LIQUIDACOES_MERCADO
+    )
+    GROUP BY data_referencia
+    ORDER BY data_referencia DESC
+    LIMIT ?
+)
 SELECT * FROM (
 SELECT
     m.tipo_titulo,
@@ -68,5 +79,5 @@ LEFT JOIN MERCADO_SECUNDARIO m
 WHERE m.tipo_titulo IS NULL
 
 ) AS combined
+WHERE combined.data_referencia IN (SELECT data_referencia FROM latest_dates)
 ORDER BY data_referencia DESC, tipo_titulo, data_vencimento
-LIMIT ?

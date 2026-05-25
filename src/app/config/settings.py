@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 from pydantic import field_validator
@@ -28,6 +29,9 @@ class PathSettings(BaseSettings):
 
     data_root: Path = Path("data")
     sqlite_db_path: Path = Path("data/app.db")
+    package_data_root: Path = Path("data/brazilian_bonds_db")
+    package_sqlite_path: Path = Path("database/app.db")
+    migrations_dir: Path = Path("src/app/database/migrations")
     data_start_date: date = date(2026, 1, 1)
 
     @field_validator("data_start_date", mode="before")
@@ -118,7 +122,15 @@ class AppSettings:
         self.tesouro = TesouroSettings()
         self.sidra = SidraSettings()
         self.uptodata = UptodataSettings()
+        self._path_overlay: Any = None
         self._apply_log_level()
+
+    def activate_path_overlay(self, env: Any) -> None:
+        """Point lake paths at package layout (``LocalEnvironment``) for the current process."""
+        self._path_overlay = env
+
+    def deactivate_path_overlay(self) -> None:
+        self._path_overlay = None
 
     def _apply_log_level(self) -> None:
         import logging
@@ -135,34 +147,67 @@ class AppSettings:
 
     @property
     def data_root(self) -> Path:
+        if self._path_overlay is not None:
+            return self._path_overlay.data_root
         return resolve_path(self.paths.data_root, self.project_root)
 
     @property
     def bronze_root(self) -> Path:
+        if self._path_overlay is not None:
+            return self._path_overlay.bronze_root
         return self.data_root / "raw"
 
     @property
     def silver_root(self) -> Path:
+        if self._path_overlay is not None:
+            return self._path_overlay.silver_root
         return self.data_root / "silver"
 
     @property
     def meta_dir(self) -> Path:
+        if self._path_overlay is not None:
+            return self._path_overlay.metadata_dir
         return self.data_root / "meta"
 
     @property
     def db_path(self) -> Path:
+        if self._path_overlay is not None:
+            return self._path_overlay.sqlite_db_path
         return resolve_path(self.paths.sqlite_db_path, self.project_root)
 
     @property
+    def package_data_root_resolved(self) -> Path:
+        return resolve_path(self.paths.package_data_root, self.project_root)
+
+    @property
+    def package_sqlite_relative(self) -> Path:
+        return self.paths.package_sqlite_path
+
+    @property
     def migrations_dir(self) -> Path:
-        return self.project_root / "migrations"
+        return resolve_path(self.paths.migrations_dir, self.project_root)
 
     @property
     def data_start_date(self) -> date:
         return self.paths.data_start_date
 
     def ensure_data_layout(self) -> None:
-        """Create data directories (raw, silver, meta, SQLite parent folder)."""
+        """Create data directories (dev layout or package overlay layout)."""
+        if self._path_overlay is not None:
+            env = self._path_overlay
+            for path in (
+                env.data_root,
+                env.database_dir,
+                env.lake_root,
+                env.bronze_root,
+                env.silver_root,
+                env.gold_root,
+                env.logs_dir,
+                env.metadata_dir,
+                env.sqlite_db_path.parent,
+            ):
+                path.mkdir(parents=True, exist_ok=True)
+            return
         for path in (self.data_root, self.bronze_root, self.silver_root, self.meta_dir, self.db_path.parent):
             path.mkdir(parents=True, exist_ok=True)
 

@@ -41,9 +41,23 @@ def test_bronze_silver_under_data_root(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.silver_root == PROJECT_ROOT / "lake_data" / "silver"
 
 
-def test_migrations_dir_points_to_repo_root() -> None:
+def test_migrations_dir_from_settings_default() -> None:
+    get_settings.cache_clear()
     settings = get_settings()
-    assert settings.migrations_dir == PROJECT_ROOT / "migrations"
+    assert settings.migrations_dir == PROJECT_ROOT / "src" / "app" / "database" / "migrations"
+    assert settings.migrations_dir.name == "migrations"
+    assert (settings.migrations_dir.parent / "migrate.py").is_file()
+
+
+def test_package_paths_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    get_settings.cache_clear()
+    monkeypatch.setenv("PACKAGE_DATA_ROOT", "pkg_root")
+    monkeypatch.setenv("PACKAGE_SQLITE_PATH", "db/custom.sqlite")
+    monkeypatch.setenv("MIGRATIONS_DIR", "alt/migrations")
+    settings = get_settings()
+    assert settings.package_data_root_resolved == PROJECT_ROOT / "pkg_root"
+    assert settings.package_sqlite_relative == Path("db/custom.sqlite")
+    assert settings.migrations_dir == PROJECT_ROOT / "alt" / "migrations"
 
 
 def test_anbima_settings_from_env(monkeypatch: pytest.MonkeyPatch) -> None:

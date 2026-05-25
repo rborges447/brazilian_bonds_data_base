@@ -22,15 +22,22 @@ def test_resolve_bronze_tasks_monthly_from_data_start(
     proj = next(t for t in tasks if t.name == "projecoes")
     ipca = next(t for t in tasks if t.name == "ipca_indice")
 
-    expected = [
+    expected_proj = [
         "2026-01-01",
         "2026-02-01",
         "2026-03-01",
         "2026-04-01",
         "2026-05-01",
     ]
-    assert proj.dates == expected
-    assert ipca.dates == expected
+    expected_ipca = [
+        "2025-09-01",
+        "2025-10-01",
+        "2025-11-01",
+        "2025-12-01",
+        *expected_proj,
+    ]
+    assert proj.dates == expected_proj
+    assert ipca.dates == expected_ipca
 
 
 def test_months_to_fetch_uses_task_dates() -> None:

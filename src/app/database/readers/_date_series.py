@@ -14,7 +14,7 @@ from app.database.readers._execute import (
 
 
 class DateSeriesTableReader:
-    """fetch_latest / fetch_on / fetch_range / fetch_all for one gold table."""
+    """fetch_latest (last n distinct dates) / fetch_on / fetch_range / fetch_all."""
 
     def __init__(
         self,

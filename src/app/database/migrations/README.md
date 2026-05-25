@@ -13,4 +13,4 @@ from app.database import apply_migrations
 apply_migrations()
 ```
 
-Legacy `../migrations/` (001–013) is **deprecated** — use a fresh `app.db` for v2.
+Apply on a fresh `data/app.db` when upgrading from an older schema.

@@ -7,17 +7,12 @@ import logging
 import sys
 
 from app.cli.bronze import _print_results as print_bronze_results
-from app.cli.gold import _materialize_builder, _run_result, _setup_logging as setup_gold_logging
+from app.cli.gold import _setup_logging as setup_gold_logging
 from app.cli.silver import _print_results as print_silver_results
 from app.config import get_settings
 from app.core.sync_range import sync_end_date, sync_start_date
 from app.core.sync_verify import has_mandatory_gaps, sync_status_report
-from app.lake.bronze.pipeline import run_bronze_phase
-from app.lake.bronze.tasks import resolve_bronze_tasks
-from app.lake.gold import GoldOrchestrator
-from app.lake.gold.tasks import resolve_gold_tasks
-from app.lake.silver.pipeline import run_silver_phase
-from app.lake.silver.tasks import resolve_silver_tasks
+from app.services.sync_runner import run_daily_sync
 
 
 def _setup_logging() -> None:
@@ -56,29 +51,14 @@ def cmd_status(end: str | None, *, check_persist: bool = True) -> int:
 
 
 def cmd_daily(end: str | None, *, do_persist: bool) -> int:
-    get_settings().ensure_data_layout()
-
     print("=== Bronze ===")
-    bronze_tasks = resolve_bronze_tasks(end)
-    bronze_results = run_bronze_phase(bronze_tasks)
-    print_bronze_results(bronze_results)
-
+    phases = run_daily_sync(end, persist=do_persist)
+    print_bronze_results(phases[0].details)
     print("=== Silver ===")
-    silver_tasks = resolve_silver_tasks(end)
-    silver_results = run_silver_phase(silver_tasks)
-    print_silver_results(silver_results)
-
+    print_silver_results(phases[1].details)
     print("=== Gold ===")
     setup_gold_logging()
-    gold_tasks = resolve_gold_tasks(end, persist=do_persist)
-    orch = GoldOrchestrator()
-    for task in gold_tasks:
-        if not task.dates and task.name != "feriados":
-            print(f"{task.name}: skip (nothing to materialize)")
-            continue
-        result = _materialize_builder(orch, task.name, task.dates)
-        _run_result(result, do_persist=do_persist)
-
+    print(f"gold: {phases[2].task_count} task(s)")
     print("=== Status ===")
     return cmd_status(end, check_persist=True)
 
@@ -100,7 +80,6 @@ def main(argv: list[str] | None = None) -> None:
     end = args[1] if len(args) > 1 and not args[1].startswith("-") else None
 
     if cmd == "status":
-        # Status always checks SQLite gaps; --persist applies only to ``daily``.
         code = cmd_status(end, check_persist=True)
         sys.exit(code)
 

@@ -102,8 +102,9 @@ def test_titulos_publicos_static_reader(tmp_path: Path) -> None:
     )
     reader = GoldReader(db_path=db)
     assert len(reader.titulos_publicos.fetch_all()) >= 1
-    assert len(reader.titulos_publicos.fetch_latest(1)) == 1
-    with pytest.raises(TypeError, match="data_referencia"):
+    with pytest.raises(TypeError, match="fetch_all"):
+        reader.titulos_publicos.fetch_latest(1)
+    with pytest.raises(TypeError, match="fetch_all"):
         reader.titulos_publicos.fetch_on("2026-01-15")
 
 
@@ -158,3 +159,7 @@ def test_mercado_liquidacoes_full_outer(tmp_path: Path) -> None:
     on_day = reader.mercado_liquidacoes.fetch_on("2026-01-10")
     assert len(on_day) == 1
     assert on_day.iloc[0]["pu_medio_liq"] == pytest.approx(500.0)
+
+    latest = reader.mercado_com_liquidacoes.fetch_latest(2)
+    assert latest["data_referencia"].nunique() == 2
+    assert set(latest["data_referencia"]) == {"2026-01-11", "2026-01-12"}
