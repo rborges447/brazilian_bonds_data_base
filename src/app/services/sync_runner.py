@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.lake.bronze.pipeline import run_bronze_phase
 from app.lake.bronze.tasks import resolve_bronze_tasks
 from app.lake.gold import GoldOrchestrator
+from app.lake.gold.contracts import BUILDER_SILVER_DATASETS
 from app.lake.gold.tasks import resolve_gold_tasks
 from app.lake.silver.pipeline import run_silver_phase
 from app.lake.silver.tasks import resolve_silver_tasks
@@ -22,10 +23,21 @@ class SyncPhaseResult:
     details: Any
 
 
-def _filter_tasks(tasks: list[Any], datasets: list[str] | None) -> list[Any]:
-    if not datasets:
-        return tasks
+def _allowed_task_names(datasets: list[str] | None) -> set[str] | None:
+    """Dataset names plus gold builder names whose silver inputs are in scope."""
+    if datasets is None:
+        return None
     allowed = set(datasets)
+    for builder, silver_datasets in BUILDER_SILVER_DATASETS.items():
+        if any(ds in allowed for ds in silver_datasets):
+            allowed.add(builder)
+    return allowed
+
+
+def _filter_tasks(tasks: list[Any], datasets: list[str] | None) -> list[Any]:
+    allowed = _allowed_task_names(datasets)
+    if allowed is None:
+        return tasks
     return [t for t in tasks if t.name in allowed]
 
 
@@ -35,6 +47,7 @@ def run_daily_sync(
     start_date: str | None = None,
     persist: bool = True,
     datasets: list[str] | None = None,
+    ipca_dict_dates: list[str] | None = None,
 ) -> list[SyncPhaseResult]:
     """Run bronze, silver, and gold phases (same orchestration as ``sync cmd_daily``)."""
     get_settings().ensure_data_layout()
@@ -49,9 +62,12 @@ def run_daily_sync(
     orch = GoldOrchestrator()
     gold_results: list[Any] = []
     for task in gold_tasks:
-        if not task.dates and task.name != "feriados":
+        dates = task.dates
+        if task.name == "ipca_dict" and ipca_dict_dates:
+            dates = ipca_dict_dates
+        if not dates and task.name != "feriados":
             continue
-        result = _materialize_builder(orch, task.name, task.dates)
+        result = _materialize_builder(orch, task.name, dates)
         _run_result(result, do_persist=persist)
         gold_results.append(result)
 

@@ -23,6 +23,7 @@ def _result_stub(db_path: Path | None = None) -> UpdateDatabaseResult:
         sync_ran=False,
         sync_phases=(),
         skipped_sync=True,
+        invalidation=None,
     )
 
 
@@ -39,6 +40,7 @@ def test_update_delegates_to_update_database(mock_update_database) -> None:
         end_date=None,
         force=True,
         persist=False,
+        refresh_dates=None,
     )
     assert isinstance(result, UpdateDatabaseResult)
     assert result.skipped_sync is True
@@ -65,4 +67,22 @@ def test_update_with_data_root_passes_through(mock_update_database, tmp_path: Pa
         end_date=None,
         force=False,
         persist=True,
+        refresh_dates=None,
+    )
+
+
+@patch("app.public.update.update_database", return_value=_result_stub())
+def test_update_passes_refresh_dates(mock_update_database) -> None:
+    from app.public import update
+
+    update(refresh_dates=["2026-05-25"], force=True)
+
+    mock_update_database.assert_called_once_with(
+        data_root=None,
+        datasets=None,
+        start_date=None,
+        end_date=None,
+        force=True,
+        persist=True,
+        refresh_dates=["2026-05-25"],
     )

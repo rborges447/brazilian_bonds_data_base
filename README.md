@@ -144,12 +144,79 @@ bbdb.update(
     datasets=None,       # lista restrita; None = todos
     start_date=None,     # YYYY-MM-DD
     end_date=None,
-    force=False,         # True força sync mesmo sem gaps
+    force=False,         # False: incremental. True: refresh destrutivo no escopo.
     persist=True,        # persiste bronze/silver/gold
+    refresh_dates=None, # list[str] (ISO). Usado apenas com force=True.
 )
 ```
 
 Fluxo automático: pastas → migrations SQLite → detectar lacunas → sync bronze → silver → gold.
+
+---
+
+## Refresh destrutivo (`force=True`)
+
+Quando `force=True`, o `update()` **apaga e reprocessa** bronze, silver e gold **no escopo** (`datasets` + janela de datas), **antes** do sync (em vez de apenas rodar incremental).
+
+### `force=False` (padrão)
+
+Comportamento incremental: o sync roda apenas onde há lacunas obrigatórias (bronze/silver/gold faltando).
+
+### `force=True`
+
+- Se `datasets=None`, o escopo inclui **todos** os datasets do pipeline.
+- Se `datasets=[...]`, o escopo é restrito aos datasets informados.
+- Se `refresh_dates=[\"YYYY-MM-DD\", ...]`, a invalidação diária fica limitada às datas explícitas dentro de `start_date`…`end_date`.
+
+Tabela compacta (datasets → gold/table):
+
+| Dataset | Gold / tabela | Granularidade |
+|---------|---------------|---------------|
+| `cdi` | `CDI` | dia |
+| `ptax` | `PTAX` | dia |
+| `mercado_secundario` | `MERCADO_SECUNDARIO` | dia |
+| `liquidacoes_mercado` | `LIQUIDACOES_MERCADO` | dia |
+| `leiloes` | `LEILOES` | dia |
+| `ajustes_bmf` | `AJUSTES_BMF` | dia |
+| `ipca_indice`, `projecoes` | `IPCA_DICT` | mês → série diária |
+| `feriados` | `FERIADOS` | snapshot |
+
+### Nota especial: `ipca_dict` (IPCA mensal)
+
+Quando o escopo de `force=True` invalidar um mês de `ipca_indice` e/ou `projecoes`, o pipeline rematerializa a **série diária** de `IPCA_DICT` a partir do primeiro dia do mês impactado **até a data final do sync** (lógica existente do builder `ipca_dict`).
+
+### Exemplos
+
+Caso motivador (`ajustes_bmf` com data única):
+
+```python
+import brazilian_bonds_db as bbdb
+
+bbdb.update(
+    data_root="./data/brazilian_bonds_db",
+    datasets=["ajustes_bmf"],
+    start_date="2026-05-25",
+    end_date="2026-05-25",
+    force=True,
+    refresh_dates=["2026-05-25"],
+)
+
+data = bbdb.read_data(data_root="./data/brazilian_bonds_db")
+df = data.ajustes_bmf.fetch_on("2026-05-25")
+```
+
+Janela ampla (`datasets=None`):
+
+```python
+bbdb.update(
+    data_root="./data/brazilian_bonds_db",
+    start_date="2026-05-01",
+    end_date="2026-05-31",
+    force=True,
+)
+```
+
+Aviso: operação mais pesada. Se souber o conjunto de datasets e datas a corrigir, prefira `datasets` + `refresh_dates`.
 
 ---
 
@@ -193,7 +260,7 @@ print(data.titulos_publicos.fetch_all().head())
 | `ModuleNotFoundError: brazilian_bonds_db` | `pip install -e .` no repo correto; venv ativo |
 | Sync falha ANBIMA | `ANBIMA_CLIENT_ID` / `SECRET` no `.env` |
 | Banco vazio após `read_data` | Executar `update()` antes; conferir `result.db_path` |
-| Dados desatualizados | `bbdb.update(force=True)` ou `start_date` / `end_date` |
+| Dados desatualizados / incompletos | `bbdb.update(force=True, datasets=[...], refresh_dates=[...])` ou ajuste `start_date` / `end_date` |
 | Layout dev vs pacote | CLI do repo usa `data/app.db`; consumidor usa `data/brazilian_bonds_db` |
 
 ---
@@ -209,6 +276,8 @@ print(data.titulos_publicos.fetch_all().head())
 ## Desenvolvimento do repositório
 
 Para bronze/silver/gold, CLI e layout **dev** (`data/app.db`), veja [docs/development.md](docs/development.md) (documentação de mantenedores; em atualização na Feature 003).
+
+CLI dev de sync incremental: `python run_sync.py daily [YYYY-MM-DD] [--persist]`. Para refresh destrutivo no layout local (mesma semântica de `update(force=True)` em `data/app.db`), use `python run_sync.py daily --force [--start-date ...] [--datasets ...] [--refresh-dates ...]`. Consumidores externos devem usar `bbdb.update()`, não a CLI.
 
 Outros documentos:
 
