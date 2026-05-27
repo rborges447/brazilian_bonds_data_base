@@ -75,6 +75,10 @@ class AnbimaClient:
                     raise last_err from None
         return None
 
+    def fetch_vna(self, date_iso: str) -> Optional[Any]:
+        """Daily VNA by reference date (titulos-publicos/vna)."""
+        return self.fetch_by_date(self.vna_url, date_iso)
+
     def fetch_by_mes_ano(self, url: str, mes: int | str, ano: int | str) -> Optional[Any]:
         params = {"mes": f"{int(mes):02d}", "ano": f"{int(ano):04d}"}
         last_err: Exception | None = None

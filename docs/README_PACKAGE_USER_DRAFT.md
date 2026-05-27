@@ -179,6 +179,7 @@ Tabela compacta (datasets → gold/table):
 | `mercado_secundario` | `MERCADO_SECUNDARIO` | dia |
 | `liquidacoes_mercado` | `LIQUIDACOES_MERCADO` | dia |
 | `leiloes` | `LEILOES` | dia |
+| `vna` | `VNA` | dia (1 linha por `codigo_selic`) |
 | `ajustes_bmf` | `AJUSTES_BMF` | dia |
 | `ipca_indice`, `projecoes` | `IPCA_DICT` | mês → série diária |
 | `feriados` | `FERIADOS` | snapshot |
@@ -242,6 +243,7 @@ O objeto retornado expõe **atributos por dataset**. Métodos típicos (nem todo
 - `data.liquidacoes_mercado`
 - `data.leiloes`
 - `data.ajustes_bmf`
+- `data.vna` — VNA diário ANBIMA (`data_referencia`, `codigo_selic`, `tipo_correcao`, `index`, `data_validade`, `vna`, `vna_ajustado`)
 - `data.feriados`
 
 ### Tabelas de dimensão (`fetch_all`, `fetch_latest`)
@@ -276,6 +278,7 @@ bbdb.update(data_root="./data/brazilian_bonds_db", force=False)
 
 data = bbdb.read_data(data_root="./data/brazilian_bonds_db")
 print(data.cdi.fetch_latest(5))
+print(data.vna.fetch_on("2026-05-20"))
 print(data.titulos_publicos.fetch_all().head())
 ```
 

@@ -9,6 +9,7 @@ from app.lake.gold.materializers.ipca_dict import IPCA_DICT_COLUMNS
 TABLE_FERIADOS = "FERIADOS"
 TABLE_CDI = "CDI"
 TABLE_PTAX = "PTAX"
+TABLE_VNA = "VNA"
 TABLE_IPCA_DICT = "IPCA_DICT"
 TABLE_TITULOS_PUBLICOS = "TITULOS_PUBLICOS"
 TABLE_MERCADO_SECUNDARIO = "MERCADO_SECUNDARIO"
@@ -21,6 +22,15 @@ TABLE_JOB_RUNS = "job_runs"
 FERIADOS_COLUMNS: tuple[str, ...] = ("data",)
 CDI_COLUMNS: tuple[str, ...] = ("data_referencia", "cdi")
 PTAX_COLUMNS: tuple[str, ...] = ("data_referencia", "ptax_compra", "ptax_venda")
+VNA_COLUMNS: tuple[str, ...] = (
+    "data_referencia",
+    "codigo_selic",
+    "tipo_correcao",
+    "index",
+    "data_validade",
+    "vna",
+    "vna_ajustado",
+)
 
 TITULOS_PUBLICOS_COLUMNS: tuple[str, ...] = (
     "tipo_titulo",
@@ -94,6 +104,7 @@ BUSINESS_TABLES_V2: tuple[str, ...] = (
     TABLE_FERIADOS,
     TABLE_CDI,
     TABLE_PTAX,
+    TABLE_VNA,
     TABLE_IPCA_DICT,
     TABLE_TITULOS_PUBLICOS,
     TABLE_MERCADO_SECUNDARIO,
@@ -142,6 +153,8 @@ __all__ = [
     "TABLE_MERCADO_SECUNDARIO",
     "TABLE_PTAX",
     "TABLE_TITULOS_PUBLICOS",
+    "TABLE_VNA",
     "TITULOS_PUBLICOS_COLUMNS",
+    "VNA_COLUMNS",
     "validate_dataframe_columns",
 ]

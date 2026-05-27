@@ -78,6 +78,8 @@ def _materialize_builder(
         return orch.materialize_liquidacoes_mercado(dates)
     if name == "leiloes":
         return orch.materialize_leiloes(dates)
+    if name == "vna":
+        return orch.materialize_vna(dates)
     ctx = BuilderContext(dates=dates or None)
     return orch.materialize(name, ctx=ctx)
 

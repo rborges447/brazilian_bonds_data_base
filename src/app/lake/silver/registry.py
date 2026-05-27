@@ -13,6 +13,7 @@ from app.lake.silver.transforms import (
     mercado_secundario,
     projecoes,
     ptax,
+    vna,
 )
 
 TRANSFORMS: dict[str, SilverTransform] = {
@@ -25,6 +26,7 @@ TRANSFORMS: dict[str, SilverTransform] = {
     "projecoes": projecoes.normalize_partition,
     "cdi": cdi.normalize_partition,
     "ptax": ptax.normalize_partition,
+    "vna": vna.normalize_partition,
 }
 
 

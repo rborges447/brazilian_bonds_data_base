@@ -265,6 +265,22 @@ class GoldOrchestrator:
         )
         return self.materialize("leiloes", ctx=run_ctx)
 
+    def materialize_vna(
+        self,
+        dates: list[str],
+        ctx: BuilderContext | None = None,
+    ) -> GoldMaterialized:
+        """Materialize VNA for ``dates``: ``value`` is a DataFrame for SQL insert."""
+        base = ctx or BuilderContext()
+        run_ctx = BuilderContext(
+            dates=dates,
+            start_date=base.start_date,
+            end_date=base.end_date,
+            as_of_date=base.as_of_date,
+            extras=base.extras,
+        )
+        return self.materialize("vna", ctx=run_ctx)
+
     def materialize_ipca_dict(
         self,
         dates: list[str],

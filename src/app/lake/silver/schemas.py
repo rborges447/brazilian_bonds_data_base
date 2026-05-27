@@ -84,3 +84,23 @@ PTAX_RENAME_MAP = {
 }
 
 PTAX_NUMERIC = ["ptax_compra", "ptax_venda"]
+
+VNA_RENAME_MAP = {
+    "data": "data_referencia",
+    "Data": "data_referencia",
+    "dt_referencia": "data_referencia",
+    "codigoSelic": "codigo_selic",
+    "codigo": "codigo_selic",
+    "cod_selic": "codigo_selic",
+    "tipoCorrecao": "tipo_correcao",
+    "correcao": "tipo_correcao",
+    "indice": "index",
+    "índice": "index",
+    "dataValidade": "data_validade",
+    "validade": "data_validade",
+    "VNA": "vna",
+    "valor_vna": "vna",
+    "valor": "vna",
+}
+
+VNA_NUMERIC = ["index", "vna"]

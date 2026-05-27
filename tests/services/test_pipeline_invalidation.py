@@ -17,6 +17,7 @@ from app.repositories.bmf import BmfRepository
 from app.repositories.cdi import CdiRepository
 from app.repositories.feriados import FeriadosRepository
 from app.repositories.ipca_dict import IpcaDictRepository
+from app.repositories.vna import VnaRepository
 from app.services.pipeline_invalidation import (
     _remove_partition_artifact,
     invalidate_bronze_partitions,
@@ -60,9 +61,9 @@ def test_resolve_all_datasets_when_none() -> None:
         end_date="2026-05-25",
     )
     assert set(scope.datasets) == set(DATASETS.keys())
-    assert len(scope.datasets) == 9
-    assert "vna_lft" not in scope.builders
-    assert len(scope.builders) == len(BUILDER_NAMES) - 1
+    assert len(scope.datasets) == 10
+    assert "vna" in scope.builders
+    assert len(scope.builders) == len(BUILDER_NAMES)
 
 
 def test_resolve_refresh_dates_restricts_daily() -> None:
@@ -488,6 +489,7 @@ def test_invalidate_ajustes_bmf_scope_does_not_touch_cdi(lake_tmp_root: Path) ->
         ("ipca_indice", "ipca_dict"),
         ("projecoes", "ipca_dict"),
         ("feriados", "feriados"),
+        ("vna", "vna"),
     ],
 )
 def test_resolve_maps_dataset_to_builder(dataset: str, expected_builder: str) -> None:
@@ -502,3 +504,80 @@ def test_resolve_maps_dataset_to_builder(dataset: str, expected_builder: str) ->
     table, date_col = BUILDER_TABLE[expected_builder]  # type: ignore[literal-required]
     assert table
     assert date_col
+
+
+def _vna_row(**overrides: object) -> dict:
+    row = {
+        "data_referencia": "2026-05-25",
+        "codigo_selic": 210100,
+        "tipo_correcao": "O",
+        "index": 14.65,
+        "data_validade": "2025-05-23",
+        "vna": 16616.59,
+        "vna_ajustado": None,
+    }
+    row.update(overrides)
+    return row
+
+
+def test_invalidate_gold_vna(lake_tmp_root: Path) -> None:
+    db = lake_tmp_root / "test.db"
+    _migrate(db)
+    VnaRepository().upsert(
+        pd.DataFrame(
+            [
+                _vna_row(data_referencia="2026-05-24", codigo_selic=210100),
+                _vna_row(data_referencia="2026-05-24", codigo_selic=210200),
+                _vna_row(data_referencia="2026-05-25", codigo_selic=210100),
+            ]
+        ),
+        db_path=db,
+    )
+    scope = resolve_invalidation_scope(
+        datasets=["vna"],
+        start_date="2026-05-25",
+        end_date="2026-05-25",
+        refresh_dates=["2026-05-25"],
+    )
+    deleted = invalidate_gold_persisted(scope, db)
+    assert deleted == 1
+    assert _sql_dates(db, "VNA", "data_referencia") == ["2026-05-24", "2026-05-24"]
+
+
+def _seed_vna_cdi_lake_and_gold(lake_root: Path, db: Path) -> dict[str, Path]:
+    _migrate(db)
+    paths = {
+        "vna_bronze": _touch_bronze(lake_root, "vna", "data", _REF_DATE, "json"),
+        "vna_silver": _touch_silver(lake_root, "vna", "data", _REF_DATE),
+        "cdi_bronze": _touch_bronze(lake_root, "cdi", "data", _REF_DATE, "parquet"),
+        "cdi_silver": _touch_silver(lake_root, "cdi", "data", _REF_DATE),
+    }
+    VnaRepository().upsert(
+        pd.DataFrame([_vna_row()]),
+        db_path=db,
+    )
+    CdiRepository().upsert(
+        pd.DataFrame([{"data_referencia": _REF_DATE, "cdi": 0.01}]),
+        db_path=db,
+    )
+    return paths
+
+
+def test_invalidate_vna_scope_does_not_touch_cdi(lake_tmp_root: Path) -> None:
+    db = lake_tmp_root / "test.db"
+    paths = _seed_vna_cdi_lake_and_gold(lake_tmp_root, db)
+    scope = resolve_invalidation_scope(datasets=["vna"], **_SCOPE_KW)
+
+    assert "cdi" not in scope.partition_values_by_dataset
+    assert scope.builders == ("vna",)
+
+    invalidate_bronze_partitions(scope)
+    invalidate_silver_partitions(scope)
+    invalidate_gold_persisted(scope, db)
+
+    assert not paths["vna_bronze"].is_file()
+    assert not paths["vna_silver"].is_file()
+    assert paths["cdi_bronze"].is_file()
+    assert paths["cdi_silver"].is_file()
+    assert _sql_dates(db, "CDI", "data_referencia") == [_REF_DATE]
+    assert _sql_dates(db, "VNA", "data_referencia") == []

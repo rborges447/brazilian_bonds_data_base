@@ -15,6 +15,7 @@ from app.repositories.leiloes import LeiloesRepository
 from app.repositories.liquidacoes_mercado import LiquidacoesMercadoRepository
 from app.repositories.mercado_secundario import MercadoSecundarioRepository
 from app.repositories.ptax import PtaxRepository
+from app.repositories.vna import VnaRepository
 
 
 def persist_materialized(
@@ -31,9 +32,6 @@ def persist_materialized(
             raise TypeError("feriados gold value must be list[str]")
         return FeriadosRepository().upsert(value, db_path=db_path)
 
-    if name == "vna_lft":
-        raise NotImplementedError("vna_lft persistence is not implemented.")
-
     if not isinstance(value, pd.DataFrame):
         raise TypeError(f"{name} gold value must be DataFrame for persistence")
 
@@ -45,6 +43,7 @@ def persist_materialized(
         "mercado_secundario": MercadoSecundarioRepository(),
         "liquidacoes_mercado": LiquidacoesMercadoRepository(),
         "leiloes": LeiloesRepository(),
+        "vna": VnaRepository(),
     }
     repo = repos.get(name)
     if repo is None:

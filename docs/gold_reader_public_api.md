@@ -65,7 +65,7 @@ All methods return **pandas** `DataFrame` instances.
 
 ### Daily series (date-partitioned tables)
 
-Attributes: `cdi`, `ptax`, `ipca_dict`, `mercado_secundario`, `liquidacoes_mercado`, `leiloes`, `ajustes_bmf`.
+Attributes: `cdi`, `ptax`, `ipca_dict`, `mercado_secundario`, `liquidacoes_mercado`, `leiloes`, `ajustes_bmf`, `vna`.
 
 | Method | Description |
 |--------|-------------|
@@ -81,6 +81,7 @@ data.cdi.fetch_all()
 data.ptax.fetch_latest(5)
 data.ipca_dict.fetch_on("2026-01-15")
 data.mercado_secundario.fetch_range("2026-01-01", "2026-03-31")
+data.vna.fetch_on("2026-05-20")
 ```
 
 ### Snapshot tables (`fetch_all` only)
@@ -136,6 +137,7 @@ data.mercado_liquidacoes.fetch_range("2026-01-01", "2026-01-31")
 | `liquidacoes_mercado` | Date series | yes | yes | yes | yes |
 | `leiloes` | Date series | yes | yes | yes | yes |
 | `ajustes_bmf` | Date series | yes | yes | yes | yes |
+| `vna` | Date series | yes | yes | yes | yes |
 | `feriados` | Snapshot | yes | no | no | no |
 | `titulos_publicos` | Snapshot | yes | no | no | no |
 | `contratos_bmf` | Snapshot | yes | no | no | no |

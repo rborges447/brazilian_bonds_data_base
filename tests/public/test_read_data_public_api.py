@@ -35,6 +35,7 @@ def test_read_data_delegates_to_gold_reader_with_db_path(tmp_path: Path) -> None
         "titulos_publicos",
         "mercado_secundario",
         "mercado_com_liquidacoes",
+        "vna",
     ):
         assert hasattr(data, attr)
 

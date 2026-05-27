@@ -17,7 +17,7 @@ def test_builder_names() -> None:
         "liquidacoes_mercado",
         "leiloes",
         "ipca_dict",
-        "vna_lft",
+        "vna",
     }
 
 

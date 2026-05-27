@@ -1,4 +1,4 @@
-"""Future: build VNA LFT after bronze/silver dataset for ANBIMA VNA exists."""
+"""Placeholder for VNA gold builder; silver transform and materializer in tasks 4–5."""
 
-BUILDER_NAME = "vna_lft"
-SILVER_DATASETS: tuple[str, ...] = ()
+BUILDER_NAME = "vna"
+SILVER_DATASETS: tuple[str, ...] = ("vna",)

@@ -27,6 +27,7 @@ DATASETS: dict[str, DatasetConfig] = {
     "feriados": DatasetConfig("feriados", "run_always"),
     "cdi": DatasetConfig("cdi", "missing_dates"),
     "ptax": DatasetConfig("ptax", "missing_dates"),
+    "vna": DatasetConfig("vna", "missing_dates"),
 }
 
 

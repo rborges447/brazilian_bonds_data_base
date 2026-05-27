@@ -28,6 +28,7 @@ from app.database.schema import (
     TABLE_LIQUIDACOES_MERCADO,
     TABLE_MERCADO_SECUNDARIO,
     TABLE_PTAX,
+    TABLE_VNA,
 )
 from app.lake.gold.contracts import BUILDER_NAMES, BUILDER_SILVER_DATASETS, BuilderName
 from app.lake.silver.storage import partition_artifact_exists
@@ -45,6 +46,7 @@ BUILDER_TABLE: dict[BuilderName, tuple[str, str]] = {
     "leiloes": (TABLE_LEILOES, "data_referencia"),
     "ipca_dict": (TABLE_IPCA_DICT, "data_referencia"),
     "feriados": (TABLE_FERIADOS, "data"),
+    "vna": (TABLE_VNA, "data_referencia"),
 }
 
 
@@ -55,7 +57,7 @@ def candidates_for_builder(
     start: str | None = None,
 ) -> list[str]:
     """Partition values in the canonical sync window for this builder."""
-    if builder == "feriados" or builder == "vna_lft":
+    if builder == "feriados":
         return []
     if builder == "ipca_dict":
         return sync_calendar_days(end=end, start=start)

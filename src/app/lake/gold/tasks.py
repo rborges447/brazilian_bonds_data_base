@@ -35,7 +35,7 @@ def resolve_gold_tasks(
     if builder is not None:
         names = (builder,)
     else:
-        names = tuple(n for n in BUILDER_NAMES if n != "vna_lft")
+        names = BUILDER_NAMES
 
     tasks: list[GoldTask] = []
     for name in names:

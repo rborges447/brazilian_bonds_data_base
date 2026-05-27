@@ -12,6 +12,7 @@ from app.lake.bronze.extractors.liquidacoes_mercado import extract_liquidacoes_m
 from app.lake.bronze.extractors.mercado_secundario import extract_mercado_secundario
 from app.lake.bronze.extractors.projecoes import extract_projecoes
 from app.lake.bronze.extractors.ptax import extract_ptax
+from app.lake.bronze.extractors.vna import extract_vna
 
 EXTRACTORS: dict[str, BronzeExtractor] = {
     "mercado_secundario": extract_mercado_secundario,
@@ -23,6 +24,7 @@ EXTRACTORS: dict[str, BronzeExtractor] = {
     "projecoes": extract_projecoes,
     "cdi": extract_cdi,
     "ptax": extract_ptax,
+    "vna": extract_vna,
 }
 
 

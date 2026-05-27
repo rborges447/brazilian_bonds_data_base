@@ -10,6 +10,7 @@ from app.database.readers import GoldReader
 from app.repositories.cdi import CdiRepository
 from app.repositories.liquidacoes_mercado import LiquidacoesMercadoRepository
 from app.repositories.mercado_secundario import MercadoSecundarioRepository
+from app.repositories.vna import VnaRepository
 
 
 def _migrate(db: Path) -> None:
@@ -91,6 +92,44 @@ def test_cdi_date_series_readers(tmp_path: Path) -> None:
     assert len(reader.cdi.fetch_on("2026-01-03")) == 1
     assert len(reader.cdi.fetch_range("2026-01-02", "2026-01-04")) == 2
     assert len(reader.cdi.fetch_all()) == 3
+
+
+def _vna_row(data_referencia: str, codigo_selic: int, vna: float) -> dict:
+    return {
+        "data_referencia": data_referencia,
+        "codigo_selic": codigo_selic,
+        "tipo_correcao": "O",
+        "index": 14.65,
+        "data_validade": "2025-05-23",
+        "vna": vna,
+        "vna_ajustado": None,
+    }
+
+
+def test_vna_date_series_readers(tmp_path: Path) -> None:
+    db = tmp_path / "read.db"
+    _migrate(db)
+    VnaRepository().upsert(
+        pd.DataFrame(
+            [
+                _vna_row("2026-01-02", 210100, 16600.0),
+                _vna_row("2026-01-02", 210200, 16700.0),
+                _vna_row("2026-01-03", 210100, 16650.0),
+                _vna_row("2026-01-05", 210100, 16750.0),
+            ]
+        ),
+        db_path=db,
+    )
+    reader = GoldReader(db_path=db)
+    assert len(reader.vna.fetch_all()) == 4
+    on_day = reader.vna.fetch_on("2026-01-02")
+    assert len(on_day) == 2
+    assert set(on_day["codigo_selic"]) == {210100, 210200}
+    ranged = reader.vna.fetch_range("2026-01-02", "2026-01-03")
+    assert len(ranged) == 3
+    latest = reader.vna.fetch_latest(2)
+    assert latest["data_referencia"].nunique() == 2
+    assert set(latest["data_referencia"]) == {"2026-01-05", "2026-01-03"}
 
 
 def test_titulos_publicos_static_reader(tmp_path: Path) -> None:

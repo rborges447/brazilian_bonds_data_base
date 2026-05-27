@@ -3,10 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from app.contracts import BronzePartitionRef, BronzeResult, ExtractResult
-from app.core.partitioning import PARTITION_SPECS, PIPELINE_NAMES
+from app.core.partitioning import PARTITION_SPECS, PIPELINE_NAMES, get_partition_spec
 from app.lake.bronze.registry import EXTRACTORS
 from app.core.datasets import DATASETS
-
 
 def test_extract_result_dataclass() -> None:
     result = ExtractResult(
@@ -48,3 +47,10 @@ def test_datasets_align_with_partition_specs() -> None:
 
 def test_every_pipeline_has_extractor() -> None:
     assert set(EXTRACTORS.keys()) == set(PIPELINE_NAMES)
+
+
+def test_vna_partition_spec() -> None:
+    spec = get_partition_spec("vna")
+    assert spec.partition_key == "data"
+    assert spec.granularity == "day"
+    assert spec.artifact_ext == "json"

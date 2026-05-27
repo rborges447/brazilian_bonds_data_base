@@ -20,7 +20,7 @@ class GoldReader:
     Daily series (``fetch_latest``, ``fetch_on``, ``fetch_range``, ``fetch_all``):
 
     - ``cdi``, ``ptax``, ``ipca_dict``, ``mercado_secundario``, ``liquidacoes_mercado``,
-      ``leiloes``, ``ajustes_bmf``
+      ``leiloes``, ``ajustes_bmf``, ``vna``
 
     ``fetch_latest(n)`` returns all rows for the last ``n`` distinct reference dates
     (not the last ``n`` physical rows).
@@ -47,6 +47,7 @@ class GoldReader:
         )
         self.leiloes = DateSeriesTableReader(query_prefix="leiloes", db_path=db_path)
         self.ajustes_bmf = DateSeriesTableReader(query_prefix="ajustes_bmf", db_path=db_path)
+        self.vna = DateSeriesTableReader(query_prefix="vna", db_path=db_path)
         self.feriados = FeriadosReader(db_path=db_path)
         self.titulos_publicos = TitulosPublicosReader(db_path=db_path)
         self.contratos_bmf = ContratosBmfReader(db_path=db_path)

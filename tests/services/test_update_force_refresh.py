@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -13,12 +13,14 @@ from app.database import MIGRATIONS_DIR, apply_migrations
 from app.database.connection import get_connection
 from app.database.schema import IPCA_DICT_COLUMNS
 from app.lake.bronze.writer import write_partition_parquet as write_bronze_parquet
+from app.lake.bronze.writer import write_partition_json as write_bronze_json
 from app.lake.silver.writer import write_partition_parquet as write_silver_parquet
 from app.public import read_data, update
 from app.repositories.bmf import BmfRepository
 from app.repositories.cdi import CdiRepository
 from app.repositories.feriados import FeriadosRepository
 from app.repositories.ipca_dict import IpcaDictRepository
+from app.repositories.vna import VnaRepository
 from app.services.local_environment_service import ensure_local_environment
 
 _REF_DATE = "2026-05-25"
@@ -305,3 +307,119 @@ def test_update_force_ipca_rebuilds_daily_series_through_end_date(
     assert len(read_data(data_root=str(root)).ipca_dict.fetch_range("2026-05-01", end)) == len(
         expected
     )
+
+
+_WRONG_VNA = 100.0
+_CORRECT_VNA = 16616.592308
+_VNA_REF = "2026-05-25"
+_VNA_PAYLOAD = [
+    {
+        "data_referencia": _VNA_REF,
+        "titulos": [
+            {
+                "tipo_titulo": "LFT",
+                "codigo_selic": "210100",
+                "index": 14.65,
+                "tipo_correcao": "O",
+                "data_validade": "2026-05-23",
+                "vna": _CORRECT_VNA,
+            }
+        ],
+    }
+]
+
+
+def _seed_vna_wrong_with_cdi(env_root: Path, db: Path) -> None:
+    env = ensure_local_environment(data_root=env_root, create=False)
+    from app.config import get_settings
+
+    settings = get_settings()
+    settings.activate_path_overlay(env)
+    try:
+        write_bronze_json("vna", "data", _VNA_REF, _VNA_PAYLOAD)
+        write_silver_parquet(
+            "vna",
+            "data",
+            _VNA_REF,
+            pd.DataFrame(
+                [
+                    {
+                        "data_referencia": _VNA_REF,
+                        "codigo_selic": 210100,
+                        "tipo_correcao": "O",
+                        "index": 14.65,
+                        "data_validade": "2026-05-23",
+                        "vna": _WRONG_VNA,
+                    }
+                ]
+            ),
+        )
+        write_bronze_parquet(
+            "cdi",
+            "data",
+            _REF_DATE,
+            pd.DataFrame(
+                [{"data_referencia": pd.Timestamp(_REF_DATE), "estimativa_taxa_selic": 0.01}]
+            ),
+            "parquet",
+        )
+        write_silver_parquet(
+            "cdi",
+            "data",
+            _REF_DATE,
+            pd.DataFrame([{"data_referencia": _REF_DATE, "cdi": 0.01}]),
+        )
+    finally:
+        settings.deactivate_path_overlay()
+
+    VnaRepository().upsert(
+        pd.DataFrame(
+            [
+                {
+                    "data_referencia": _VNA_REF,
+                    "codigo_selic": 210100,
+                    "tipo_correcao": "O",
+                    "index": 14.65,
+                    "data_validade": "2026-05-23",
+                    "vna": _WRONG_VNA,
+                    "vna_ajustado": None,
+                }
+            ]
+        ),
+        db_path=db,
+    )
+    CdiRepository().upsert(
+        pd.DataFrame([{"data_referencia": _REF_DATE, "cdi": 0.01}]),
+        db_path=db,
+    )
+
+
+@patch("app.lake.bronze.extractors.vna.AnbimaClient")
+def test_update_force_vna_refresh_reprocesses_without_touching_cdi(
+    mock_client_cls: MagicMock,
+    tmp_path: Path,
+) -> None:
+    mock_client = MagicMock()
+    mock_client.fetch_vna.return_value = _VNA_PAYLOAD
+    mock_client_cls.return_value = mock_client
+
+    root = _setup_env(tmp_path)
+    db = root / "database" / "app.db"
+    _seed_vna_wrong_with_cdi(root, db)
+
+    update(
+        data_root=str(root),
+        datasets=["vna"],
+        start_date=_VNA_REF,
+        end_date=_VNA_REF,
+        refresh_dates=[_VNA_REF],
+        force=True,
+    )
+
+    vna_row = read_data(data_root=str(root)).vna.fetch_on(_VNA_REF)
+    assert len(vna_row) == 1
+    assert float(vna_row.iloc[0]["vna"]) == pytest.approx(_CORRECT_VNA)
+
+    cdi_row = read_data(data_root=str(root)).cdi.fetch_on(_REF_DATE)
+    assert len(cdi_row) == 1
+    assert float(cdi_row.iloc[0]["cdi"]) == pytest.approx(0.01)

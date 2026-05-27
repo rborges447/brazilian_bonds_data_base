@@ -26,6 +26,7 @@ from app.lake.gold.materializers.mercado_secundario import (
     from_silver as mercado_secundario_from_silver,
 )
 from app.lake.gold.materializers.ptax import from_silver as ptax_from_silver
+from app.lake.gold.materializers.vna import from_silver as vna_from_silver
 from app.lake.gold.builders.ipca_dict import build_for_date
 from app.lake.gold.materializers.ipca_dict import to_dataframe as ipca_dict_to_dataframe
 
@@ -39,6 +40,7 @@ MATERIALIZERS: dict[BuilderName, MaterializerFn] = {
     "mercado_secundario": mercado_secundario_from_silver,
     "liquidacoes_mercado": liquidacoes_mercado_from_silver,
     "leiloes": leiloes_from_silver,
+    "vna": vna_from_silver,
 }
 
 def _build_ipca_dict(silver: SilverFrames, ctx: BuilderContext) -> Any:

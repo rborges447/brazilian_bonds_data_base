@@ -1,6 +1,6 @@
 # Brazilian Bonds DB (`brazilian_bonds_db`)
 
-Pacote Python de **base de dados local** para séries e tabelas de renda fixa brasileira (CDI, PTAX, IPCA, mercado secundário, leilões, BMF, etc.). Instale o pacote, atualize os dados com `update()` e consulte tudo via `read_data()`.
+Pacote Python de **base de dados local** para séries e tabelas de renda fixa brasileira (CDI, PTAX, IPCA, VNA ANBIMA, mercado secundário, leilões, BMF, etc.). Instale o pacote, atualize os dados com `update()` e consulte tudo via `read_data()`.
 
 **API pública:** apenas `update()` e `read_data()`. Não é necessário importar `GoldReader`, SQL ou módulos do lake.
 
@@ -81,7 +81,7 @@ Edite `.env` no diretório de trabalho (projeto consumidor ou raiz do clone) com
 
 | Variável | Uso |
 |----------|-----|
-| `ANBIMA_CLIENT_ID` / `ANBIMA_CLIENT_SECRET` | Mercado secundário, projeções |
+| `ANBIMA_CLIENT_ID` / `ANBIMA_CLIENT_SECRET` | Mercado secundário, projeções, VNA |
 | `DATA_START_DATE` | Início do histórico no sync (ex. `2026-01-01`) |
 | `BCB_*`, `TESOURO_*`, `FERIADOS_*` | URLs/timeouts (defaults costumam bastar) |
 | `UPTODATA_*` | Ajustes BMF (opcional; arquivos locais B3) |
@@ -124,6 +124,7 @@ data = bbdb.read_data()
 
 df_cdi = data.cdi.fetch_latest(10)
 df_ptax = data.ptax.fetch_range("2025-01-01", "2025-12-31")
+df_vna = data.vna.fetch_on("2026-05-20")
 ```
 
 Import alternativo:
@@ -177,6 +178,7 @@ Tabela compacta (datasets → gold/table):
 | `mercado_secundario` | `MERCADO_SECUNDARIO` | dia |
 | `liquidacoes_mercado` | `LIQUIDACOES_MERCADO` | dia |
 | `leiloes` | `LEILOES` | dia |
+| `vna` | `VNA` | dia (1 linha por `codigo_selic`) |
 | `ajustes_bmf` | `AJUSTES_BMF` | dia |
 | `ipca_indice`, `projecoes` | `IPCA_DICT` | mês → série diária |
 | `feriados` | `FERIADOS` | snapshot |
@@ -224,7 +226,7 @@ Aviso: operação mais pesada. Se souber o conjunto de datasets e datas a corrig
 
 O objeto retornado expõe atributos por dataset. Métodos comuns: `fetch_all()`, `fetch_latest(n)`, `fetch_on(date)`, `fetch_range(start, end)` (nem todo dataset suporta todos).
 
-**Séries diárias:** `cdi`, `ptax`, `ipca_dict`, `mercado_secundario`, `liquidacoes_mercado`, `leiloes`, `ajustes_bmf` — `fetch_latest(n)` retorna todas as linhas das últimas **n datas** distintas (não as últimas n linhas).
+**Séries diárias:** `cdi`, `ptax`, `ipca_dict`, `mercado_secundario`, `liquidacoes_mercado`, `leiloes`, `ajustes_bmf`, `vna` — `fetch_latest(n)` retorna todas as linhas das últimas **n datas** distintas (não as últimas n linhas). A tabela `VNA` tem uma linha por `(data_referencia, codigo_selic)`; colunas: `tipo_correcao`, `index`, `data_validade`, `vna`, `vna_ajustado` (nullable).
 
 **Snapshot (`fetch_all` apenas):** `feriados`, `titulos_publicos`, `contratos_bmf`
 
@@ -248,6 +250,7 @@ bbdb.update(data_root="./data/brazilian_bonds_db")
 data = bbdb.read_data(data_root="./data/brazilian_bonds_db")
 
 print(data.cdi.fetch_latest(5))
+print(data.vna.fetch_latest(5))
 print(data.titulos_publicos.fetch_all().head())
 ```
 

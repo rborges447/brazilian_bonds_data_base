@@ -11,6 +11,10 @@ from app.database.schema import validate_dataframe_columns
 from app.database.sql import upsert_prefix
 
 
+def _quote_ident(name: str) -> str:
+    return f'"{name}"'
+
+
 def upsert_dataframe(
     table: str,
     df: pd.DataFrame,
@@ -24,7 +28,7 @@ def upsert_dataframe(
     subset = df[list(columns)].copy()
     prefix = upsert_prefix()
     placeholders = ", ".join("?" for _ in columns)
-    col_list = ", ".join(columns)
+    col_list = ", ".join(_quote_ident(c) for c in columns)
     sql = f"{prefix} {table} ({col_list}) VALUES ({placeholders})"
     conn = get_connection(db_path)
     try:

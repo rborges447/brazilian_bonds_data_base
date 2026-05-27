@@ -30,8 +30,6 @@ _IPCA_DATASETS = frozenset({"ipca_indice", "projecoes"})
 def _dataset_to_builder() -> dict[str, BuilderName]:
     out: dict[str, BuilderName] = {}
     for builder, silver_datasets in BUILDER_SILVER_DATASETS.items():
-        if builder == "vna_lft":
-            continue
         for ds in silver_datasets:
             out[ds] = builder
     return out
@@ -55,7 +53,7 @@ def _builders_for_datasets(datasets: tuple[str, ...]) -> tuple[BuilderName, ...]
     seen: set[BuilderName] = set()
     for ds in datasets:
         builder = _DATASET_TO_BUILDER.get(ds)
-        if builder is not None and builder != "vna_lft":
+        if builder is not None:
             seen.add(builder)
     return tuple(sorted(seen, key=str))
 

@@ -10,6 +10,7 @@ from app.repositories.liquidacoes_mercado import LiquidacoesMercadoRepository
 from app.repositories.mercado_secundario import MercadoSecundarioRepository
 from app.repositories.ptax import PtaxRepository
 from app.repositories.titulos_publicos import TitulosPublicosRepository
+from app.repositories.vna import VnaRepository
 
 __all__ = [
     "BmfRepository",
@@ -22,4 +23,5 @@ __all__ = [
     "PtaxRepository",
     "Repository",
     "TitulosPublicosRepository",
+    "VnaRepository",
 ]
